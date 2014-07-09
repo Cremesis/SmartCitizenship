@@ -24,7 +24,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name="it.cnr.entertainment.EntertainmentService" />
+        <service android:name="it.cnr.entertainment.ServiceEntertainment" />
     </application>
 
 </manifest>

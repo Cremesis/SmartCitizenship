@@ -42,9 +42,9 @@ import cnr.Common.CallbackInterface;
 import cnr.Common.PlatformInterface;
 import cnr.Common.UserContext;
 
-public class EntertainmentService extends Service{
+public class ServiceEntertainment extends Service{
 	
-	private static final String TAG = "EntertainmentService";
+	private static final String TAG = "ServiceEntertainment";
 
 	public static final int CAMEO_PORT = 33;
 	public final static int ACTIVITY_BIND = 1; // msg che deve processare il service quando riceve il messenger dall'activity
@@ -59,7 +59,7 @@ public class EntertainmentService extends Service{
 	//public final static int ROOM_MSG = 106;// contenuto della room chat creato localmente
 	//public final static int DISPLAY_CHAT_MSGS = 107;
 	
-	private ApplicationContext appContext;   // Map<Integer,List<Boolean>> Integer indica il gioco se si è in coda o -1 altrimenti
+	private ApplicationContext appContext;   // Map<Integer,List<Boolean>> Integer indica il gioco se si ï¿½ in coda o -1 altrimenti
 												// La lista indica gli interessi ai giochi in base alla posizione. Controllo dim MAp ==1
 	private long CAMEOAppKey;
 	
@@ -310,7 +310,7 @@ public class EntertainmentService extends Service{
 		@Override
 		public void onMessageReceived(byte[] arg0, byte[] arg1)
 				throws RemoteException {
-			// TODO Gestione messaggio in arrivo, servirà una condizione su tipo di messaggio e sulla presenza in coda per switchare tra un algoritmo in coda e l'altro
+			// TODO Gestione messaggio in arrivo, servirï¿½ una condizione su tipo di messaggio e sulla presenza in coda per switchare tra un algoritmo in coda e l'altro
 	//		InetAddress remoteAdd;
 			/*ChatMsg chatmsg = (ChatMsg) readObject(arg0);
 			ArrayList<String> messages;

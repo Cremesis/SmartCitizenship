@@ -6,11 +6,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import android.app.Application;
+import android.util.Log;
 
 public class ApplicationEntertainment extends Application {
 	
 	// TODO: persistence of the data missing
 	
+    	private static final String TAG = "ApplicationEntertainment";
 	public final Integer NUMBEROFGAMES = 4;
 	
 	private Hashtable<Integer, QueueMsg> queueList; // < IDgioco, QueueMsg > 
@@ -51,6 +53,10 @@ public class ApplicationEntertainment extends Application {
 		return opinionList.get(gameID).get(userID);
 	}
 	
+	public Map<Integer, Opinion> getAllGameOpinions(Integer gameID) {
+	    	return opinionList.get(gameID);
+	}
+	
 	/**
 	 * Insert the opinion. If there is an opinion of the same user about the
 	 * same game, keep the most recent one only
@@ -71,6 +77,7 @@ public class ApplicationEntertainment extends Application {
 			}
 		}
 		
+		Log.d(TAG, "inserted/updated opinion");
 		Map<Integer, Opinion> userOpinion = new Hashtable<Integer, Opinion>();
 		userOpinion.put(userID, opinion);
 		opinionList.put(gameID, userOpinion);
@@ -97,6 +104,7 @@ public class ApplicationEntertainment extends Application {
 			}
 		}
 		
+		Log.d(TAG, "inserted/updated rating");
 		Map<Integer, RatingMsg> userRating = new Hashtable<Integer, RatingMsg>();
 		userRating.put(userID, rating);
 		ratingList.put(gameID, userRating);
@@ -110,7 +118,7 @@ public class ApplicationEntertainment extends Application {
 	 * @param queue
 	 * @return
 	 */
-	public boolean InsertQueue(Integer gameID, QueueMsg queue) {
+	public boolean insertQueue(Integer gameID, QueueMsg queue) {
 		QueueMsg gameQueue = queueList.get(gameID);
 		if(gameQueue != null) {
 			if(gameQueue.getTimestamp().compareTo(queue.getTimestamp()) > 0)
@@ -118,6 +126,7 @@ public class ApplicationEntertainment extends Application {
 				return false;
 		}
 		
+		Log.d(TAG, "inserted/updated queue");
 		queueList.put(gameID, queue);
 		return true;
 	}
