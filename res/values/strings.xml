@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Proximity Chat</string>
+    <string name="new_room">New Room</string>
+    <string name="action_settings">Settings</string>
+
+</resources>

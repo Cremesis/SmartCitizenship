@@ -1,0 +1,79 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.duratacode.MainActivity$PlaceholderFragment" >
+
+    <ToggleButton
+        android:id="@+id/toggleButton0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="274dp"
+        android:layout_marginLeft="28dp"
+        android:layout_marginRight="188dp"
+        android:layout_marginTop="67dp"
+        android:text="ToggleButton"
+        android:textOff="Gioco 1"
+        android:textOn="Gioco 1"
+        android:onClick="queueDuration" />
+
+    <ToggleButton
+        android:id="@+id/toggleButton3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/toggleButton0"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/toggleButton0"
+        android:layout_marginRight="59dp"
+        android:text="ToggleButton"
+        android:textOff="Gioco 2"
+        android:textOn="Gioco 2"
+        android:onClick="queueDuration" />
+
+    <ToggleButton
+        android:id="@+id/toggleButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/toggleButton0"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/toggleButton0"
+        android:layout_below="@+id/toggleButton3"
+        android:layout_marginBottom="119dp"
+        android:layout_marginTop="66dp"
+        android:text="ToggleButton"
+        android:textOff="Gioco 3"
+        android:textOn="Gioco 3" 
+        android:onClick="queueDuration"/>
+
+    <ToggleButton
+        android:id="@+id/toggleButton2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/toggleButton1"
+        android:layout_alignLeft="@+id/toggleButton3"
+        android:layout_alignRight="@+id/toggleButton3"
+        android:layout_alignTop="@+id/toggleButton1"
+        android:text="ToggleButton"
+        android:textOff="Gioco 4"
+        android:textOn="Gioco 4" 
+        android:onClick="queueDuration"/>
+
+    <Chronometer
+        android:id="@+id/chronometer1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/toggleButton1"
+        android:layout_alignRight="@+id/toggleButton2"
+        android:layout_below="@+id/toggleButton2"
+        android:layout_marginTop="44dp"
+        android:text="Chronometer" />
+
+</RelativeLayout>
