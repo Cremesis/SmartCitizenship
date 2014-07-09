@@ -140,7 +140,6 @@ public class ActivityEntertainment extends FragmentActivity{
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
@@ -151,7 +150,7 @@ public class ActivityEntertainment extends FragmentActivity{
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
+		/*int id = item.getItemId();
 		switch (id) {
 		case R.id.action_settings:
 			return true;
@@ -197,7 +196,7 @@ public class ActivityEntertainment extends FragmentActivity{
 			return true;
 		default:
 			break;
-		}		
+		}*/
 		return super.onOptionsItemSelected(item);
 	}
 	
@@ -337,7 +336,7 @@ public double setProbabilityTrasmission(int n){
 				cronoStarted=0;
 								
 			}
-			else {
+			else {/*
 				if(cronoStarted==0){
 				crono1.stop();
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
@@ -358,7 +357,7 @@ public double setProbabilityTrasmission(int n){
 				}
 				// TODO: insieme alla valutazione permettere l'inserimento di un'opinione (facoltativa)
 				// massimo tot caratteri
-			}
+			*/}
 		
 		
 		case R.id.toggleButton1:

@@ -59,14 +59,13 @@ public class EntertainmentService extends Service{
 	//public final static int ROOM_MSG = 106;// contenuto della room chat creato localmente
 	//public final static int DISPLAY_CHAT_MSGS = 107;
 	
-	
-	
 	private ApplicationContext appContext;   // Map<Integer,List<Boolean>> Integer indica il gioco se si è in coda o -1 altrimenti
 												// La lista indica gli interessi ai giochi in base alla posizione. Controllo dim MAp ==1
 	private long CAMEOAppKey;
 	
+	private Set<InetAddress> notInQueue;
 	private Hashtable<InetAddress, Hashtable<ContextKey, Boolean>> neighbors;// Contesto applicativo dei vicini
-	private Hashtable<InetAddress, Integer> neighborsAge;
+	private Hashtable<InetAddress, UserContext> neighborsUserContext;
 	
 	//private Hashtable<Integer, ArrayList<InetAddress>> activeChats;
 	//private Hashtable<Integer, ArrayList<String>> roomMsg;
@@ -106,8 +105,9 @@ public class EntertainmentService extends Service{
 		
 		application = (ApplicationEntertainment) getApplication();
 		
+		notInQueue = new HashSet<InetAddress>();
 		neighbors = new Hashtable<InetAddress, Hashtable<ContextKey,Boolean>>();
-		neighborsAge = new Hashtable<InetAddress, Integer>();
+		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
 		if (!bindService(new Intent("cnr.CAMEO.PLATFORM"), sc, Context.BIND_AUTO_CREATE)){ // bind con il service
 			Toast.makeText(this, "Can't connect to CAMEO", Toast.LENGTH_SHORT).show();
@@ -150,13 +150,21 @@ public class EntertainmentService extends Service{
 				throws RemoteException {
 			Log.d(TAG, "neighborApplicationContextUpdated()");
 			try {
-				Hashtable<ContextKey, Boolean> currentContext = neighbors.get(InetAddress.getByAddress(arg1));
+				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
+				
+				// Assumed that the neighbor context is already present locally
+				Hashtable<ContextKey, Boolean> currentContext = neighbors.get(thisNeighbor);
 				
 				Set<Entry<ContextKey, Boolean>> updatedSet = (Set<Entry<ContextKey, Boolean>>) arg0.entrySet();
 				for (Entry<ContextKey, Boolean> entry : updatedSet){ // sulle mappe non ci sono gli iterator quindi devo trasformarli in array
 					
 					Message msg = Message.obtain();//messaggio vuoto del messenger per poi comunicare con l'activity
-					if(entry.getValue() == null) continue; // Ignore removed keys from the context
+					
+					if(entry.getValue() == null) { // Remove "null" values from the context and add the others
+						currentContext.remove(entry.getKey());
+					} else {
+						currentContext.put(entry.getKey(), true);
+					}
 					
 					switch(entry.getKey()) {
 						case QUEUE_1:
@@ -188,19 +196,20 @@ public class EntertainmentService extends Service{
 						break;
 						
 						case SAW: {
-							// TODO: switch to the Spread and Wait algorithm
+							notInQueue.add(thisNeighbor);
 						}
 						break;
 						
 						case WMH: {
-							// TODO: switch to the Wave MultiHop algorithm
+							notInQueue.remove(thisNeighbor);
 						}
 						break;
+						
 						default:
 							Log.e(TAG, "Context not recognized: " + entry.getKey());
 					}
 					
-					msg.arg1 = entry.getKey(); //roomID
+					/*msg.arg1 = entry.getKey(); //roomID
 					ArrayList<InetAddress> list = activeChats.get(msg.arg1);
 					if(list==null){
 						list=new ArrayList<InetAddress>();
@@ -222,7 +231,7 @@ public class EntertainmentService extends Service{
 						msg.obj = entry.getValue();
 						Log.e("FRANCA", "service send CREATE_REMOTE_ROOM");
 					}
-					mActivity.send(msg);
+					mActivity.send(msg);*/
 				}
 				
 				neighbors.put(InetAddress.getByAddress(arg1), (Hashtable<ContextKey, Boolean>) arg0);
@@ -231,19 +240,26 @@ public class EntertainmentService extends Service{
 				e.printStackTrace();
 			}
 		}
-
+		
 		@Override
 		public void neighborIn(UserContext arg0, byte[] arg1)
 				throws RemoteException {
 			try {
-				neighbors.put(InetAddress.getByAddress(arg1), new Hashtable<ContextKey, Boolean>());
-				String name = arg0.getName();
-				Integer age = arg0.getAge();
+				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
+				neighborsUserContext.put(thisNeighbor, arg0);
+				
+				// TODO: check and eventually save this neighbor if it is the youngest (keep maximum two)
+				
+				Hashtable<ContextKey, Boolean> remoteContext = (Hashtable<ContextKey, Boolean>) cameo.getRemoteApplicationContext(arg1, CAMEOAppKey);
+				neighbors.put(thisNeighbor, remoteContext);
+				
+				if(remoteContext.get(ContextKey.WMH))
+					notInQueue.add(thisNeighbor);
+				
 				numberOfNeighbors = neighbors.size();
-				Log.e("PROVA", "NeigghborIN "+ name );
-				//qui potrei creare un fragment contenente lista dei nodi vicini raggiungibili
+				Log.d(TAG, "NeighborIn: id - " + arg0.hashCode() + " - age: " + arg0.getAge());
+				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -251,12 +267,19 @@ public class EntertainmentService extends Service{
 		@Override
 		public void neighborOut(byte[] arg0) throws RemoteException {
 			try {
-				// TODO : Aggiornamento numero vicini
-				neighbors.remove(InetAddress.getByAddress(arg0));
-				Log.e("PROVA", "NeigghborOut");
-				//qui dovrei eliminare il neighbor dalla lista visibile nel fragment 
+				InetAddress thisNeighbor = InetAddress.getByAddress(arg0);
+				
+				// TODO: check and eventually delete this neighbor from the youngest,
+				// and then add the third more young (if exists) in its place
+				
+				neighborsUserContext.remove(thisNeighbor);
+				notInQueue.remove(thisNeighbor);
+				neighbors.remove(thisNeighbor);
+				
+				numberOfNeighbors = neighbors.size();
+				Log.d(TAG, "NeighborOut: id - " + arg0.hashCode());
+				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -264,19 +287,28 @@ public class EntertainmentService extends Service{
 		@Override
 		public void neighborUserContextUpdated(UserContext remoteUserContext, byte[] arg1)
 				throws RemoteException {
-			// TODO Auto-generated method stub
+			try {
+				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
+				
+				neighborsUserContext.put(thisNeighbor, remoteUserContext);
+				
+				// TODO: need to check if it is the youngest now...
 
+				Log.d(TAG, "neighborUserContextUpdated: id - " + remoteUserContext.hashCode());
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			}
 		}
 
 		@Override
 		public void onCommunityChanged(String arg0) throws RemoteException {
 			// TODO Auto-generated method stub
-
+			// Don't care
 		}
 		
 
 		@Override
-		public void onMessageReceived(byte[] arg0, byte[] arg1) //messaggi ricevuti da p2p communications ayttraverso CAMEO (chat opportunistica)
+		public void onMessageReceived(byte[] arg0, byte[] arg1)
 				throws RemoteException {
 			// TODO Gestione messaggio in arrivo, servirà una condizione su tipo di messaggio e sulla presenza in coda per switchare tra un algoritmo in coda e l'altro
 	//		InetAddress remoteAdd;
@@ -302,7 +334,6 @@ public class EntertainmentService extends Service{
 	};
 
 	private void registerApp(){
-
 		//successfully connected to CAMEO
 		try {
 			if(!cameo.isUserDefined()){
@@ -322,7 +353,7 @@ public class EntertainmentService extends Service{
 			Toast.makeText(this, "Registered with CAMEO", Toast.LENGTH_SHORT).show();
 			//create new application context
 			appContext = new ApplicationContext();
-			localuser= (cameo.getLocalUserContext(CAMEOAppKey)).getName().hashCode();
+			localuser= (cameo.getLocalUserContext(CAMEOAppKey)).hashCode();
 			if(mActivity!=null){
 				Message msg = Message.obtain();
 				msg.what = USER;
