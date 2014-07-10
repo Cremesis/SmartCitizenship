@@ -128,10 +128,10 @@ public class ServiceDroidPark extends Service{
 	 * @return the queue, or null if she is not in queue
 	 */
 	public Attraction whichQueue() {
-		if(appContext.getValue(ContextKey.QUEUE_1) != null) return Attraction.GAME_1;
-		if(appContext.getValue(ContextKey.QUEUE_2) != null) return Attraction.GAME_2;
-		if(appContext.getValue(ContextKey.QUEUE_3) != null) return Attraction.GAME_3;
-		if(appContext.getValue(ContextKey.QUEUE_4) != null) return Attraction.GAME_4;
+		if(appContext.getValue(ContextKey.QUEUE_1.ordinal()) != null) return Attraction.GAME_1;
+		if(appContext.getValue(ContextKey.QUEUE_2.ordinal()) != null) return Attraction.GAME_2;
+		if(appContext.getValue(ContextKey.QUEUE_3.ordinal()) != null) return Attraction.GAME_3;
+		if(appContext.getValue(ContextKey.QUEUE_4.ordinal()) != null) return Attraction.GAME_4;
 		return null;
 	}
 	
@@ -256,7 +256,7 @@ public class ServiceDroidPark extends Service{
 		public void neighborIn(UserContext arg0, byte[] arg1)
 				throws RemoteException {
 			try {
-				if(arg0.getAge() == null) return;
+				if(arg0 == null) return;
 				Log.d(TAG, "NeighborIn: id - " + arg0.hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				neighborsUserContext.put(thisNeighbor, arg0);
@@ -371,8 +371,10 @@ public class ServiceDroidPark extends Service{
 			appContext = new ApplicationContext();
 			
 			// FIXME: temporary context
-			appContext.addValue(ContextKey.PREF_1, true);
+			appContext.addValue(ContextKey.PREF_1.ordinal(), true);
 			appContext.update(cameo, CAMEOAppKey);
+			
+			Log.d(TAG, "appContext updated");
 			
 			localuser= (cameo.getLocalUserContext(CAMEOAppKey)).hashCode();
 			if(mActivity!=null){
