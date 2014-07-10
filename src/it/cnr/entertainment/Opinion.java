@@ -3,10 +3,20 @@ package it.cnr.entertainment;
 import java.util.Date;
 
 public class Opinion {
+	
 	private int idGame;
 	private int idUser;
 	private Date timestamp;
 	private String msg;
+	
+	public Opinion(int idGame, int idUser, Date timestamp, String msg) {
+		super();
+		this.idGame = idGame;
+		this.idUser = idUser;
+		this.timestamp = timestamp;
+		this.msg = msg;
+	}
+	
 	
 	public int getIdGame() {
 		return idGame;

@@ -59,11 +59,11 @@ public class ServiceDroidPark extends Service{
 	//public final static int ROOM_MSG = 106;// contenuto della room chat creato localmente
 	//public final static int DISPLAY_CHAT_MSGS = 107;
 	
-	private ApplicationContext appContext;   // Map<Integer,List<Boolean>> Integer indica il gioco se si � in coda o -1 altrimenti
-												// La lista indica gli interessi ai giochi in base alla posizione. Controllo dim MAp ==1
+	private ApplicationContext appContext;   
 	private long CAMEOAppKey;
 	
 	private Set<InetAddress> notInQueue;
+	private Set<InetAddress> InQueue;
 	private Hashtable<InetAddress, Hashtable<ContextKey, Boolean>> neighbors;// Contesto applicativo dei vicini
 	private Hashtable<InetAddress, UserContext> neighborsUserContext;
 	
@@ -89,7 +89,7 @@ public class ServiceDroidPark extends Service{
 		public void onServiceConnected(ComponentName name, IBinder service) { //gestione connessione a CAMEO che e' lui stesso un service
 			cameo = PlatformInterface.Stub.asInterface(service);
 			connectedToCameo = true;
-			registerApp(); //registro la mia app
+			registerApp(); 
 		}
 
 		@Override
@@ -104,6 +104,7 @@ public class ServiceDroidPark extends Service{
 		
 		application = (ApplicationDroidPark) getApplication();
 		
+		InQueue = new HashSet<InetAddress>();
 		notInQueue = new HashSet<InetAddress>();
 		neighbors = new Hashtable<InetAddress, Hashtable<ContextKey,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
@@ -253,7 +254,9 @@ public class ServiceDroidPark extends Service{
 				if(remoteContext.get(ContextKey.WMH))
 					notInQueue.add(thisNeighbor);
 				
+				InQueue.add(thisNeighbor);
 				numberOfNeighbors = neighbors.size();
+				
 				Log.d(TAG, "NeighborIn: id - " + arg0.hashCode() + " - age: " + arg0.getAge());
 				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
@@ -271,6 +274,7 @@ public class ServiceDroidPark extends Service{
 				
 				neighborsUserContext.remove(thisNeighbor);
 				notInQueue.remove(thisNeighbor);
+				InQueue.remove(thisNeighbor);
 				neighbors.remove(thisNeighbor);
 				
 				numberOfNeighbors = neighbors.size();
