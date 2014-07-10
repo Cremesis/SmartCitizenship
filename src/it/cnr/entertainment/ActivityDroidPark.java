@@ -340,6 +340,8 @@ public double setProbabilityTrasmission(int n){
 		}
 	}
 	
+	
+	
 	int cronoStarted = -1;
 	
 	public void gameEvaluation(){
@@ -347,6 +349,8 @@ public double setProbabilityTrasmission(int n){
 		ratingFrag.show(getSupportFragmentManager(), "RATING");
 		
 	}
+	
+
 		
 	public void queueDuration(View v){
 		Chronometer crono1 = (Chronometer) findViewById(R.id.chronometer1);
@@ -354,6 +358,8 @@ public double setProbabilityTrasmission(int n){
 		ToggleButton t1 = (ToggleButton) findViewById(R.id.toggleButton1);
 		ToggleButton t2 = (ToggleButton) findViewById(R.id.toggleButton2);
 		ToggleButton t3 = (ToggleButton) findViewById(R.id.toggleButton3);
+		
+		// devo cambiare contesto: tipo algoritmo,coda 
 		
 		
 		switch (v.getId()){
@@ -363,7 +369,8 @@ public double setProbabilityTrasmission(int n){
 				crono1.setBase(SystemClock.elapsedRealtime());
 				crono1.start();
 				cronoStarted=0;
-								
+				
+				// devo cambiare contesto: tipo algoritmo,coda 		
 			}
 			else {
 				if(cronoStarted==0){

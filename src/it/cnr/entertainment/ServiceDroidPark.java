@@ -51,6 +51,7 @@ public class ServiceDroidPark extends Service{
 	public final static int KILL_APP = 2; //per kill activity che killa anche il service perche' connessa con una bind
 	public final static int USER = 3;
 	public final static int SENT_QUEUE_MSG = 101;
+	public final static int PERFECT_FORWARDER_CHECK = 102;
 	//public final static int CREATED_REMOTE_ROOM = 102; // msg derivato dall'evento di CAMEO
 	//public final static int REMOVED_LOCAL_ROOM = 103; // input dall'utente
 	//public final static int REMOVED_REMOTE_ROOM = 104; // dovuto a un cambio del contesto
@@ -64,7 +65,26 @@ public class ServiceDroidPark extends Service{
 	private long CAMEOAppKey;
 	
 	private Set<InetAddress> notInQueue;
+	
+	public Set<InetAddress> getNotInQueue() {
+		return notInQueue;
+	}
+
+	public void setNotInQueue(Set<InetAddress> notInQueue) {
+		this.notInQueue = notInQueue;
+	}
+
 	private Set<InetAddress> InQueue;
+	
+	
+	public Set<InetAddress> getInQueue() {
+		return InQueue;
+	}
+
+	public void setInQueue(Set<InetAddress> inQueue) {
+		InQueue = inQueue;
+	}
+
 	private Hashtable<InetAddress, Hashtable<ContextKey, Boolean>> neighbors;// Contesto applicativo dei vicini
 	private Hashtable<InetAddress, UserContext> neighborsUserContext;
 	
@@ -421,6 +441,30 @@ public class ServiceDroidPark extends Service{
 					// sendMulticastMSG(queue);
 				}
 				break;
+				
+				case PERFECT_FORWARDER_CHECK:{ // messaggio ricevuto dall'app quando entro in coda e voglio cedere le copie dei messaggi
+					if (appContext.getSubTablesKeys().contains(ContextKey.SAW)){ //&& ){  // TODO condizione sul perfect forwarder
+						//cercare un nuovo perfect forwarder tra i miei vicini NON IN CODA e passargli le copie
+					if(notInQueue.size() != 0){
+						int age_min = 1000;
+						InetAddress addr_age_min;
+						for(InetAddress i : notInQueue){
+							UserContext uc = neighborsUserContext.get(i);
+								if (uc.getAge() < age_min) {
+									age_min = uc.getAge();
+									addr_age_min = i;
+								}
+														
+						}
+								//passo le copie al più giovane funz(addr_age_min) 
+					}
+	
+					else {
+								// vedere se il messaggio riguarda la coda in cui sto entrando se sì lo elimino 
+								  //              altrimenti lo invio secondo l'algoritmo probabilistico
+					 	}
+					}
+				}
 				/*
 				case FOLLOW_REMOTE_ROOM:{ //messaggio inviato dall'activity quando spunto una room remota per segnalare il mio interesse
 					String roomName = msg.obj.toString();
@@ -551,6 +595,29 @@ public class ServiceDroidPark extends Service{
 			return o;
 		}
 
-
+		public void perfectForwarderCheck (){
+			if (appContext.getSubTablesKeys().contains(ContextKey.SAW)){ //&& ){  // TODO condizione sul perfect forwarder
+			//cercare un nuovo perfect forwarder tra i miei vicini NON IN CODA e passargli le copie
+				if(notInQueue.size() != 0){
+					int age_min = 1000;
+					InetAddress addr_age_min;
+					for(InetAddress i : notInQueue){
+						UserContext uc = neighborsUserContext.get(i);
+						if (uc.getAge() < age_min) {
+							age_min = uc.getAge();
+							addr_age_min = i;
+						}
+						else;						
+					}
+					//passo le copie al più giovane funz(addr_age_min) 
+				}
+				else {
+					// vedere se il messaggio riguarda la coda in cui sto entrando se sì lo elimino 
+					  //                                    altrimenti lo invio secondo l'algoritmo
+				}
+			}
+			
+			
+		}
 	}
 
