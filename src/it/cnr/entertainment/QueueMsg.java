@@ -9,8 +9,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 @SuppressLint("SimpleDateFormat")
-public class QueueMsg implements Parcelable {
+public class QueueMsg implements ApplicationMsg {
 	
+	private static final long serialVersionUID = -1410878463652251245L;
+
 	public QueueMsg(int idGame, Date timestamp, int duration) {
 		super();
 		this.idGame = idGame;

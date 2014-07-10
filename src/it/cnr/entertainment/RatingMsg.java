@@ -9,7 +9,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 @SuppressLint("SimpleDateFormat")
-public class RatingMsg implements Parcelable {
+public class RatingMsg implements ApplicationMsg {
+	
+	private static final long serialVersionUID = -8179313354743538606L;
 	
 	private int idGame;
 	private int idUser;
