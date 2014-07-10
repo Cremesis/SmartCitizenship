@@ -8,11 +8,11 @@ import java.util.Set;
 import android.app.Application;
 import android.util.Log;
 
-public class ApplicationEntertainment extends Application {
+public class ApplicationDroidPark extends Application {
 	
 	// TODO: persistence of the data missing
 	
-    	private static final String TAG = "ApplicationEntertainment";
+    private static final String TAG = "ApplicationDroidPark";
 	public final Integer NUMBEROFGAMES = 4;
 	
 	private Hashtable<Integer, QueueMsg> queueList; // < IDgioco, QueueMsg > 

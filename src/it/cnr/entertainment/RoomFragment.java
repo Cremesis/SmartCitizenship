@@ -89,7 +89,7 @@ public class RoomFragment extends ListFragment {
 				EditText box = (EditText) getActivity().findViewById(R.id.edit_messages);
 				String content = box.getText().toString();
 				box.setText("");
-				ActivityEntertainment act = (ActivityEntertainment)getActivity();
+				ActivityDroidPark act = (ActivityDroidPark)getActivity();
 				content = act.localuser+": "+content;
 				comments.add(content);
 				adapterRoom.notifyDataSetChanged();

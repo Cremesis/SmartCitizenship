@@ -42,11 +42,11 @@ import android.widget.RatingBar;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-public class ActivityEntertainment extends FragmentActivity implements NoticeDialogListener{
+public class ActivityDroidPark extends FragmentActivity implements NoticeDialogListener{
 
-	final public Integer NUMBEROFGAMES = 4;
+	private static final String TAG = "ActivityDroidPark";
 	
-	private ApplicationEntertainment application;
+	private ApplicationDroidPark application;
 	
 	Messenger mService;
 	boolean mBound = false;
@@ -66,9 +66,8 @@ public class ActivityEntertainment extends FragmentActivity implements NoticeDia
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-				case ServiceEntertainment.USER:{
+				case ServiceDroidPark.USER:{
 					localuser = (Integer) msg.obj;
-					
 				}
 				break;
 				
@@ -111,9 +110,9 @@ public class ActivityEntertainment extends FragmentActivity implements NoticeDia
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fragment_main);
 		
-		application = (ApplicationEntertainment) getApplication();
+		application = (ApplicationDroidPark) getApplication();
 		
-		Intent intent = new Intent(this, ServiceEntertainment.class);
+		Intent intent = new Intent(this, ServiceDroidPark.class);
 		if (!mBound){
 			bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 		}
@@ -255,7 +254,7 @@ public class ActivityEntertainment extends FragmentActivity implements NoticeDia
 			// We've bound to LocalService, cast the IBinder and get LocalService instance
 			mService = new Messenger(service);
 			Message msg = Message.obtain();
-			msg.what = ServiceEntertainment.ACTIVITY_BIND;
+			msg.what = ServiceDroidPark.ACTIVITY_BIND;
 			msg.replyTo = incomingMessenger;
 			try {
 				mService.send(msg);

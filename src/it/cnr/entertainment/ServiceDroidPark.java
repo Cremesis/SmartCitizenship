@@ -42,9 +42,9 @@ import cnr.Common.CallbackInterface;
 import cnr.Common.PlatformInterface;
 import cnr.Common.UserContext;
 
-public class ServiceEntertainment extends Service{
+public class ServiceDroidPark extends Service{
 	
-	private static final String TAG = "ServiceEntertainment";
+	private static final String TAG = "ServiceDroidPark";
 
 	public static final int CAMEO_PORT = 33;
 	public final static int ACTIVITY_BIND = 1; // msg che deve processare il service quando riceve il messenger dall'activity
@@ -74,13 +74,12 @@ public class ServiceEntertainment extends Service{
 	private final Messenger incomingMessenger = new Messenger(new IncomingHandler());
 	private Messenger mActivity;
 	
-	private ApplicationEntertainment application;
+	private ApplicationDroidPark application;
 
 	PlatformInterface cameo = null;
 	boolean connectedToCameo = false;
 	
 	private static int numberOfNeighbors;
-
 
 	public Integer localuser;
 	
@@ -103,7 +102,7 @@ public class ServiceEntertainment extends Service{
 	@Override
 	public void onCreate() {
 		
-		application = (ApplicationEntertainment) getApplication();
+		application = (ApplicationDroidPark) getApplication();
 		
 		notInQueue = new HashSet<InetAddress>();
 		neighbors = new Hashtable<InetAddress, Hashtable<ContextKey,Boolean>>();
@@ -234,8 +233,6 @@ public class ServiceEntertainment extends Service{
 					mActivity.send(msg);*/
 				}
 				
-				neighbors.put(InetAddress.getByAddress(arg1), (Hashtable<ContextKey, Boolean>) arg0);
-				
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			}
@@ -290,6 +287,7 @@ public class ServiceEntertainment extends Service{
 			try {
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				
+				neighborsUserContext.remove(thisNeighbor);
 				neighborsUserContext.put(thisNeighbor, remoteUserContext);
 				
 				// TODO: need to check if it is the youngest now...
@@ -355,6 +353,7 @@ public class ServiceEntertainment extends Service{
 			appContext = new ApplicationContext();
 			localuser= (cameo.getLocalUserContext(CAMEOAppKey)).hashCode();
 			if(mActivity!=null){
+				Log.d(TAG, "Local user id: " + localuser);
 				Message msg = Message.obtain();
 				msg.what = USER;
 				msg.obj = localuser;
