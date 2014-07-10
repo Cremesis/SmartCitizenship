@@ -64,8 +64,8 @@ public class ServiceDroidPark extends Service{
 	private long CAMEOAppKey;
 	
 	private Set<InetAddress> notInQueue;
-	private Set<InetAddress> InQueue;
-	private Hashtable<InetAddress, Hashtable<ContextKey, Boolean>> neighbors;// Contesto applicativo dei vicini
+	private Set<InetAddress> inQueue;
+	private Hashtable<InetAddress, HashMap<ContextKey, Boolean>> neighbors;// Contesto applicativo dei vicini
 	private Hashtable<InetAddress, UserContext> neighborsUserContext;
 	
 	//private Hashtable<Integer, ArrayList<InetAddress>> activeChats;
@@ -105,9 +105,9 @@ public class ServiceDroidPark extends Service{
 		
 		application = (ApplicationDroidPark) getApplication();
 		
-		InQueue = new HashSet<InetAddress>();
+		inQueue = new HashSet<InetAddress>();
 		notInQueue = new HashSet<InetAddress>();
-		neighbors = new Hashtable<InetAddress, Hashtable<ContextKey,Boolean>>();
+		neighbors = new Hashtable<InetAddress, HashMap<ContextKey,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
 		if (!bindService(new Intent("cnr.CAMEO.PLATFORM"), sc, Context.BIND_AUTO_CREATE)){ // bind con il service
@@ -164,7 +164,7 @@ public class ServiceDroidPark extends Service{
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				
 				// Assumed that the neighbor context is already present locally
-				Hashtable<ContextKey, Boolean> currentContext = neighbors.get(thisNeighbor);
+				HashMap<ContextKey, Boolean> currentContext = neighbors.get(thisNeighbor);
 				
 				Set<Entry<ContextKey, Boolean>> updatedSet = (Set<Entry<ContextKey, Boolean>>) arg0.entrySet();
 				for (Entry<ContextKey, Boolean> entry : updatedSet){ // sulle mappe non ci sono gli iterator quindi devo trasformarli in array
@@ -208,10 +208,12 @@ public class ServiceDroidPark extends Service{
 						
 						case SAW: {
 							notInQueue.add(thisNeighbor);
+							inQueue.remove(thisNeighbor);
 						}
 						break;
 						
 						case WMH: {
+							inQueue.add(thisNeighbor);
 							notInQueue.remove(thisNeighbor);
 						}
 						break;
@@ -254,23 +256,28 @@ public class ServiceDroidPark extends Service{
 		public void neighborIn(UserContext arg0, byte[] arg1)
 				throws RemoteException {
 			try {
+				if(arg0.getAge() == null) return;
 				Log.d(TAG, "NeighborIn: id - " + arg0.hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				neighborsUserContext.put(thisNeighbor, arg0);
 				
+				Log.d(TAG, "inet: " + thisNeighbor.toString());
+				
 				// TODO: check and eventually save this neighbor if it is the youngest (keep maximum two)
-				
-				// Hashtable<ContextKey, Boolean> remoteContext = (Hashtable<ContextKey, Boolean>) cameo.getRemoteApplicationContext(arg1, CAMEOAppKey);
-				// neighbors.put(thisNeighbor, remoteContext);
-				
-				// if(remoteContext.get(ContextKey.WMH))
-				// notInQueue.add(thisNeighbor);
-				// else
-				// InQueue.add(thisNeighbor);
+//				
+//				HashMap<ContextKey, Boolean> remoteContext = (HashMap<ContextKey, Boolean>) cameo.getRemoteApplicationContext(arg1, CAMEOAppKey);
+//				neighbors.put(thisNeighbor, remoteContext);
+//				
+//				Log.d(TAG, "remoteContext returned");
+//				
+//				if(remoteContext != null && remoteContext.get(ContextKey.WMH)) {
+//					notInQueue.add(thisNeighbor);
+//				} else {
+//					inQueue.add(thisNeighbor);
+//				}
 				
 				numberOfNeighbors = neighborsUserContext.size();
 				
-				Log.d(TAG, "NeighborIn: id - " + arg0.hashCode() + " - age: " + arg0.getAge());
 				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
@@ -288,7 +295,7 @@ public class ServiceDroidPark extends Service{
 				
 				neighborsUserContext.remove(thisNeighbor);
 				notInQueue.remove(thisNeighbor);
-				InQueue.remove(thisNeighbor);
+				inQueue.remove(thisNeighbor);
 				neighbors.remove(thisNeighbor);
 				
 				numberOfNeighbors = neighborsUserContext.size();
@@ -304,7 +311,6 @@ public class ServiceDroidPark extends Service{
 		@Override
 		public void neighborUserContextUpdated(UserContext remoteUserContext, byte[] arg1)
 				throws RemoteException {
-			neighborIn(remoteUserContext, arg1);
 
 			Log.d(TAG, "neighborUserContextUpdated: id - " + remoteUserContext.hashCode());
 			Log.d(TAG, "name: " + remoteUserContext.getName());
@@ -366,6 +372,7 @@ public class ServiceDroidPark extends Service{
 			
 			// FIXME: temporary context
 			appContext.addValue(ContextKey.PREF_1, true);
+			appContext.update(cameo, CAMEOAppKey);
 			
 			localuser= (cameo.getLocalUserContext(CAMEOAppKey)).hashCode();
 			if(mActivity!=null){
