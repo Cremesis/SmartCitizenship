@@ -50,7 +50,7 @@ public class ServiceDroidPark extends Service{
 	public final static int ACTIVITY_BIND = 1; // msg che deve processare il service quando riceve il messenger dall'activity
 	public final static int KILL_APP = 2; //per kill activity che killa anche il service perche' connessa con una bind
 	public final static int USER = 3;
-	//public final static int CREATED_LOCAL_ROOM = 101; // input dall'utente
+	public final static int SENT_QUEUE_MSG = 101;
 	//public final static int CREATED_REMOTE_ROOM = 102; // msg derivato dall'evento di CAMEO
 	//public final static int REMOVED_LOCAL_ROOM = 103; // input dall'utente
 	//public final static int REMOVED_REMOTE_ROOM = 104; // dovuto a un cambio del contesto
@@ -59,8 +59,8 @@ public class ServiceDroidPark extends Service{
 	//public final static int ROOM_MSG = 106;// contenuto della room chat creato localmente
 	//public final static int DISPLAY_CHAT_MSGS = 107;
 	
-	private ApplicationContext appContext;   // Map<Integer,List<Boolean>> Integer indica il gioco se si � in coda o -1 altrimenti
-												// La lista indica gli interessi ai giochi in base alla posizione. Controllo dim MAp ==1
+	private ApplicationContext appContext;   // Map<ContextKey, Boolean>
+	
 	private long CAMEOAppKey;
 	
 	private Set<InetAddress> notInQueue;
@@ -118,9 +118,19 @@ public class ServiceDroidPark extends Service{
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-			
-		
 		}
+	}
+	
+	/**
+	 * Return in which queue is the local user
+	 * @return the queue, or null if she is not in queue
+	 */
+	public Attraction whichQueue() {
+		if(appContext.getValue(ContextKey.QUEUE_1) != null) return Attraction.GAME_1;
+		if(appContext.getValue(ContextKey.QUEUE_2) != null) return Attraction.GAME_2;
+		if(appContext.getValue(ContextKey.QUEUE_3) != null) return Attraction.GAME_3;
+		if(appContext.getValue(ContextKey.QUEUE_4) != null) return Attraction.GAME_4;
+		return null;
 	}
 	
 	@Override
@@ -242,19 +252,19 @@ public class ServiceDroidPark extends Service{
 		public void neighborIn(UserContext arg0, byte[] arg1)
 				throws RemoteException {
 			try {
+				Log.d(TAG, "NeighborIn: id - " + arg0.hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				neighborsUserContext.put(thisNeighbor, arg0);
 				
 				// TODO: check and eventually save this neighbor if it is the youngest (keep maximum two)
 				
-				Hashtable<ContextKey, Boolean> remoteContext = (Hashtable<ContextKey, Boolean>) cameo.getRemoteApplicationContext(arg1, CAMEOAppKey);
-				neighbors.put(thisNeighbor, remoteContext);
+//				Hashtable<ContextKey, Boolean> remoteContext = (Hashtable<ContextKey, Boolean>) cameo.getRemoteApplicationContext(arg1, CAMEOAppKey);
+//				neighbors.put(thisNeighbor, remoteContext);
+//				
+//				if(remoteContext.get(ContextKey.WMH))
+//					notInQueue.add(thisNeighbor);
 				
-				if(remoteContext.get(ContextKey.WMH))
-					notInQueue.add(thisNeighbor);
-				
-				numberOfNeighbors = neighbors.size();
-				Log.d(TAG, "NeighborIn: id - " + arg0.hashCode() + " - age: " + arg0.getAge());
+				numberOfNeighbors = neighborsUserContext.size();
 				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
@@ -265,6 +275,7 @@ public class ServiceDroidPark extends Service{
 		public void neighborOut(byte[] arg0) throws RemoteException {
 			try {
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg0);
+				Log.d(TAG, "NeighborOut: name - " + neighborsUserContext.get(thisNeighbor).getName());
 				
 				// TODO: check and eventually delete this neighbor from the youngest,
 				// and then add the third more young (if exists) in its place
@@ -273,29 +284,23 @@ public class ServiceDroidPark extends Service{
 				notInQueue.remove(thisNeighbor);
 				neighbors.remove(thisNeighbor);
 				
-				numberOfNeighbors = neighbors.size();
-				Log.d(TAG, "NeighborOut: id - " + arg0.hashCode());
+				numberOfNeighbors = neighborsUserContext.size();
 				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			}
 		}
 
+		/**
+		 * I can't figure out how to say to do the same thing that the neighborIn does. So I replicated its code.
+		 */
 		@Override
 		public void neighborUserContextUpdated(UserContext remoteUserContext, byte[] arg1)
 				throws RemoteException {
-			try {
-				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
-				
-				neighborsUserContext.remove(thisNeighbor);
-				neighborsUserContext.put(thisNeighbor, remoteUserContext);
-				
-				// TODO: need to check if it is the youngest now...
+			neighborIn(remoteUserContext, arg1);
 
-				Log.d(TAG, "neighborUserContextUpdated: id - " + remoteUserContext.hashCode());
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			}
+			Log.d(TAG, "neighborUserContextUpdated: id - " + remoteUserContext.hashCode());
+			Log.d(TAG, "name: " + remoteUserContext.getName());
 		}
 
 		@Override
@@ -351,6 +356,10 @@ public class ServiceDroidPark extends Service{
 			Toast.makeText(this, "Registered with CAMEO", Toast.LENGTH_SHORT).show();
 			//create new application context
 			appContext = new ApplicationContext();
+			
+			// FIXME: temporary context
+			appContext.addValue(ContextKey.PREF_1, true);
+			
 			localuser= (cameo.getLocalUserContext(CAMEOAppKey)).hashCode();
 			if(mActivity!=null){
 				Log.d(TAG, "Local user id: " + localuser);
@@ -385,20 +394,27 @@ public class ServiceDroidPark extends Service{
 					mActivity = msg.replyTo; //msg di servizio tra activity e service per permettere callback
 				}
 				break;
-				/*
-				case CREATED_LOCAL_ROOM:{ //msg ricevuto dall'app quando crea una nuova stanza
-					String roomName = msg.getData().getString("name");
-					appContext.addValue(roomName.hashCode(), roomName); //aggiungo la stanza al contesto dell'applicazione
+				
+				case SENT_QUEUE_MSG:{ //msg ricevuto dall'app quando crea una nuova QueueMsg
+					QueueMsg queue = msg.getData().getParcelable("queue");
+					appContext.removeValue(ContextKey.QUEUE_1);
+					appContext.removeValue(ContextKey.QUEUE_2);
+					appContext.removeValue(ContextKey.QUEUE_3);
+					appContext.removeValue(ContextKey.QUEUE_4);
+					appContext.removeValue(ContextKey.WMH);
+					appContext.addValue(ContextKey.SAW, true); //aggiungo la stanza al contesto dell'applicazione
 					try {
 						appContext.update(cameo, CAMEOAppKey);
-						Log.e("FRANCA", "APP context updated with a new room");
+						Log.e(TAG, "Queue updated");
 					} catch (RemoteException e) {
 						e.printStackTrace();
 					}
 					
+					// TODO: temporary way to send a message to everyone
+					// sendMulticastMSG(queue);
 				}
 				break;
-				
+				/*
 				case FOLLOW_REMOTE_ROOM:{ //messaggio inviato dall'activity quando spunto una room remota per segnalare il mio interesse
 					String roomName = msg.obj.toString();
 					appContext.addValue(roomName.hashCode(), roomName);
@@ -437,7 +453,7 @@ public class ServiceDroidPark extends Service{
 		}
 	}
 
-		public void sendMulticastMSG(ChatMsg msg, Integer roomID) {
+		public void sendMulticastMSG(QueueMsg msg) {
 			/*
 			ArrayList<InetAddress> adds = activeChats.get(roomID);
 

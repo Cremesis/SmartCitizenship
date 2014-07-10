@@ -233,7 +233,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		args.putString("room", room);
 		args.putString("content",content);
 		Message msg = Message.obtain();
-		msg.what = EntertainmentService.ROOM_MSG;
+		msg.what = EntertainmentService.SENT_QUEUE_MSG;
 		msg.setData(args);
 		
 		try {
@@ -244,6 +244,29 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		}
 	}*/
 	
+	public void sendQueueMsg(QueueMsg queue){
+		//visualizzare il msg sulla lista
+		/*synchronized(roomMsgs){
+			ArrayList<String> messages = roomMsgs.get(room.hashCode());
+			if(messages==null) {
+				messages=new ArrayList<String>();
+				roomMsgs.put(room.hashCode(), messages);
+			}
+			messages.add(content); 
+		}*/
+		
+		Bundle args = new Bundle();
+		args.putParcelable("queue", queue);
+		Message msg = Message.obtain();
+		msg.what = ServiceDroidPark.SENT_QUEUE_MSG;
+		msg.setData(args);
+		
+		try {
+			mService.send(msg);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/** Defines callbacks for service binding, passed to bindService() */
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -259,7 +282,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 			try {
 				mService.send(msg);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			mBound = true;
