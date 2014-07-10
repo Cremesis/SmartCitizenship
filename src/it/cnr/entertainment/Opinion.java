@@ -1,8 +1,15 @@
 package it.cnr.entertainment;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Opinion {
+import android.annotation.SuppressLint;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+@SuppressLint("SimpleDateFormat")
+public class Opinion implements Parcelable {
 	
 	private int idGame;
 	private int idUser;
@@ -17,6 +24,45 @@ public class Opinion {
 		this.msg = msg;
 	}
 	
+	public static final Parcelable.Creator<Opinion> CREATOR = new Parcelable.Creator<Opinion>() {
+        public Opinion createFromParcel(Parcel in) {
+            return new Opinion(in);
+        }
+
+        public Opinion[] newArray(int size) {
+            return new Opinion[size];
+        }
+    };
+    
+    private Opinion(Parcel in) {
+    	DateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+    	
+    	idGame = in.readInt();
+    	idUser = in.readInt();
+    	try {
+    		timestamp = formatter.parse(in.readString());
+		} catch (Exception e) {
+			timestamp = new Date();
+			timestamp.setTime(0);
+			e.printStackTrace();
+		}
+    	msg = in.readString();
+    }
+    
+    public Opinion() {}
+	
+	@Override
+	public void writeToParcel(Parcel out, int flags) {
+		out.writeInt(idGame);
+		out.writeInt(idUser);
+		out.writeString(timestamp.toString());
+		out.writeString(msg);
+	}
+	
+	@Override
+	public int describeContents() {
+		return 0;
+	}
 	
 	public int getIdGame() {
 		return idGame;

@@ -14,7 +14,6 @@ public class QueueMsg implements Parcelable {
 	private Date timestamp;
 	private int duration;
 	
-	// this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
     public static final Parcelable.Creator<QueueMsg> CREATOR = new Parcelable.Creator<QueueMsg>() {
         public QueueMsg createFromParcel(Parcel in) {
             return new QueueMsg(in);
@@ -25,7 +24,6 @@ public class QueueMsg implements Parcelable {
         }
     };
     
-    // example constructor that takes a Parcel and gives you an object populated with it's values
     private QueueMsg(Parcel in) {
     	DateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
     	

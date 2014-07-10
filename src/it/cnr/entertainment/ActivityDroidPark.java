@@ -7,20 +7,11 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
-import cnr.Common.UserContext;
-
-import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -31,10 +22,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -249,20 +237,11 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	}*/
 	
 	public void sendQueueMsg(QueueMsg queue){
-		//visualizzare il msg sulla lista
-		/*synchronized(roomMsgs){
-			ArrayList<String> messages = roomMsgs.get(room.hashCode());
-			if(messages==null) {
-				messages=new ArrayList<String>();
-				roomMsgs.put(room.hashCode(), messages);
-			}
-			messages.add(content); 
-		}*/
-		
+		application.insertQueue(queue.getIdGame(), queue);
 		Bundle args = new Bundle();
 		args.putParcelable("queue", queue);
 		Message msg = Message.obtain();
-		msg.what = ServiceDroidPark.SENT_QUEUE_MSG;
+		msg.what = ServiceDroidPark.SEND_QUEUE_MSG;
 		msg.setData(args);
 		
 		try {
