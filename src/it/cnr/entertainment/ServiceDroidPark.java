@@ -329,8 +329,16 @@ public class ServiceDroidPark extends Service{
 		@Override
 		public void onMessageReceived(byte[] arg0, byte[] arg1)
 				throws RemoteException {
+			
+			// condizione su tipo di algoritmo
+			// ipotesi Probabilistic Transmission
+			// Evito di ritrasmetterlo a lui
+			
+			InetAddress remoteAddr = (InetAddress)readObject(arg1);
+			QueueMsg qm = (QueueMsg) readObject(arg0);
+			probAlgorithm(qm);
 			// TODO Gestione messaggio in arrivo, servirï¿½ una condizione su tipo di messaggio e sulla presenza in coda per switchare tra un algoritmo in coda e l'altro
-	//		InetAddress remoteAdd;
+				
 			/*ChatMsg chatmsg = (ChatMsg) readObject(arg0);
 			ArrayList<String> messages;
 			synchronized(roomMsg){
@@ -433,7 +441,9 @@ public class ServiceDroidPark extends Service{
 				break;
 				
 				case PERFECT_FORWARDER_CHECK:{ // messaggio ricevuto dall'app quando entro in coda e voglio cedere le copie dei messaggi
-					if (appContext.getSubTablesKeys().contains(ContextKey.SAW)){ //&& ){  // TODO condizione sul perfect forwarder
+					Log.d(TAG, "Perfect_forwarder_check message arrived");
+					
+					if (appContext.getValuesMap().containsKey(ContextKey.SAW.ordinal())){ //&& {  // TODO condizione sul perfect forwarder
 						//cercare un nuovo perfect forwarder tra i miei vicini NON IN CODA e passargli le copie
 					if(notInQueue.size() != 0){
 						int age_min = 1000;
@@ -493,6 +503,32 @@ public class ServiceDroidPark extends Service{
 				}
 		}
 	}
+	
+public double setProbabilityTrasmission(int n){
+		
+		return  Math.exp(1-n);		// probabilitÃ  esponenziale decrescente con numero di utenti
+	}
+	
+	public void probAlgorithm(Object msg){
+		double p = setProbabilityTrasmission(inQueue.size());
+		if (inQueue.size()!=0){
+					
+		if (msg instanceof QueueMsg) {
+			QueueMsg message = (QueueMsg) msg;
+			for (InetAddress i : inQueue)
+				if (Math.random()< p){
+					sendQueueMSGToPeer(message, i);
+				}
+		}
+		else if (msg instanceof RatingMsg) {
+			RatingMsg message = (RatingMsg) msg;
+			for (InetAddress i : inQueue)
+				if (Math.random()< p){
+					sendRatingMSGToPeer(message, i);
+				}
+		}
+		}
+	}
 
 		public void sendMulticastMSG(QueueMsg msg) {
 			/*
@@ -509,6 +545,37 @@ public class ServiceDroidPark extends Service{
 			}*/
 		}
 
+		public void sendQueueMSGToPeer(QueueMsg msg, InetAddress dest) {
+			try {
+				boolean result=cameo.sendMessage(writeObject(msg),
+						dest.getAddress(), false, CAMEOAppKey);
+				if(!result)
+					Log.e("Queue Message", "error with CAMEO");
+			} catch (
+					RemoteException re) {
+				Log.e("Queue Message", "Got exception while sending message to peer: "+
+						Log.getStackTraceString(re));
+			}
+			
+		}
+		
+		public void sendRatingMSGToPeer(RatingMsg msg, InetAddress dest) {
+			try {
+				boolean result=cameo.sendMessage(writeObject(msg),
+						dest.getAddress(), false, CAMEOAppKey);
+				if(!result)
+					Log.e("Queue Message", "error with CAMEO");
+			} catch (
+					RemoteException re) {
+				Log.e("Queue Message", "Got exception while sending message to peer: "+
+						Log.getStackTraceString(re));
+			}
+			
+		}
+		
+		
+		
+		
 		public void sendMSGToPeer(ChatMsg msg, InetAddress dest) {
 			/*try {
 				boolean result=cameo.sendMessage(writeObject(msg),
@@ -585,29 +652,6 @@ public class ServiceDroidPark extends Service{
 			return o;
 		}
 
-		public void perfectForwarderCheck (){
-			if (appContext.getSubTablesKeys().contains(ContextKey.SAW)){ //&& ){  // TODO condizione sul perfect forwarder
-			//cercare un nuovo perfect forwarder tra i miei vicini NON IN CODA e passargli le copie
-				if(notInQueue.size() != 0){
-					int age_min = 1000;
-					InetAddress addr_age_min;
-					for(InetAddress i : notInQueue){
-						UserContext uc = neighborsUserContext.get(i);
-						if (uc.getAge() < age_min) {
-							age_min = uc.getAge();
-							addr_age_min = i;
-						}
-						else;						
-					}
-					//passo le copie al più giovane funz(addr_age_min) 
-				}
-				else {
-					// vedere se il messaggio riguarda la coda in cui sto entrando se sì lo elimino 
-					  //                                    altrimenti lo invio secondo l'algoritmo
-				}
-			}
-			
-			
-		}
+		
 	}
 
