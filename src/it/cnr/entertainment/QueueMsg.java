@@ -10,6 +10,14 @@ import android.os.Parcelable;
 
 @SuppressLint("SimpleDateFormat")
 public class QueueMsg implements Parcelable {
+	
+	public QueueMsg(int idGame, Date timestamp, int duration) {
+		super();
+		this.idGame = idGame;
+		this.timestamp = timestamp;
+		this.duration = duration;
+	}
+	
 	private int idGame;
 	private Date timestamp;
 	private int duration;

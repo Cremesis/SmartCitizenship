@@ -303,23 +303,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	
 	//AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
 	
-public double setProbabilityTrasmission(int n){
-		
-		return  Math.exp(1-n);		// probabilità esponenziale decrescente con numero di utenti
-	}
-	
-	public void algoritmoInCoda(){
-		
-		Hashtable<InetAddress, Hashtable<Integer,String>> vicini = new Hashtable<InetAddress, Hashtable<Integer,String>>();  // va utilizzata quella derivata da Cameo
-		
-		for (Entry<InetAddress, Hashtable<Integer, String>> entry : vicini.entrySet()){
-			if (Math.random()< setProbabilityTrasmission(vicini.size())){
-				// qua devo trasmettere il messaggio
-			}
-		}
-	}
-	
-	
 	
 	int cronoStarted = -1;
 	
@@ -329,8 +312,7 @@ public double setProbabilityTrasmission(int n){
 		
 	}
 	
-
-		
+ 		
 	public void queueDuration(View v){
 		Chronometer crono1 = (Chronometer) findViewById(R.id.chronometer1);
 		ToggleButton t0 = (ToggleButton) findViewById(R.id.toggleButton0);
@@ -348,6 +330,15 @@ public double setProbabilityTrasmission(int n){
 				crono1.setBase(SystemClock.elapsedRealtime());
 				crono1.start();
 				cronoStarted=0;
+				Message msg = Message.obtain();
+				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				try {
+					mService.send(msg);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				
 				// devo cambiare contesto: tipo algoritmo,coda 		
 			}
@@ -356,14 +347,12 @@ public double setProbabilityTrasmission(int n){
 				crono1.stop();
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				QueueMsg coda = new QueueMsg();				
+								
 				Calendar cal = Calendar.getInstance();
 				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_1.ordinal();
 				
-				coda.setDuration(durataCodaInMinuti);
-				coda.setTimestamp(lastTimestamp);
-				coda.setIdGame(Attraction.GAME_1.ordinal()); 
+				QueueMsg coda = new QueueMsg(Attraction.GAME_1.ordinal(),lastTimestamp,durataCodaInMinuti); 
 				application.insertQueue(0, coda); // da generalizzare in base al bottone premuto
 								
 				cronoStarted = -1;
@@ -381,6 +370,14 @@ public double setProbabilityTrasmission(int n){
 				crono1.setBase(SystemClock.elapsedRealtime());
 				crono1.start();
 				cronoStarted = 1;
+				Message msg = Message.obtain();
+				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				try {
+					mService.send(msg);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			else {
 				if (cronoStarted==1)
@@ -389,14 +386,12 @@ public double setProbabilityTrasmission(int n){
 				cronoStarted = -1;
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				QueueMsg coda = new QueueMsg();				
+							
 				Calendar cal = Calendar.getInstance();
 				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_2.ordinal();
-				
-				coda.setDuration(durataCodaInMinuti);
-				coda.setTimestamp(lastTimestamp);
-				coda.setIdGame(Attraction.GAME_2.ordinal()); 
+				QueueMsg coda = new QueueMsg(Attraction.GAME_2.ordinal(),lastTimestamp,durataCodaInMinuti);
+			
 				application.insertQueue(1, coda); // da generalizzare in base al bottone premuto
 				
 				gameEvaluation();
@@ -411,6 +406,14 @@ public double setProbabilityTrasmission(int n){
 				crono1.setBase(SystemClock.elapsedRealtime());
 				crono1.start();
 				cronoStarted = 2;
+				Message msg = Message.obtain();
+				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				try {
+					mService.send(msg);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			else {
 				if (cronoStarted==2)
@@ -419,15 +422,12 @@ public double setProbabilityTrasmission(int n){
 				cronoStarted = -1;
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				QueueMsg coda = new QueueMsg();
+				
 				Calendar cal = Calendar.getInstance();
-				Date creationDate = cal.getTime();
+				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_3.ordinal();
-				
-				coda.setDuration(durataCodaInMinuti);
-				coda.setTimestamp(creationDate);
-				coda.setIdGame(Attraction.GAME_3.ordinal()); 
-				
+				QueueMsg coda = new QueueMsg(Attraction.GAME_3.ordinal(),lastTimestamp,durataCodaInMinuti);
+			
 				application.insertQueue(2, coda);
 				
 				gameEvaluation();
@@ -442,6 +442,14 @@ public double setProbabilityTrasmission(int n){
 				crono1.setBase(SystemClock.elapsedRealtime());
 				crono1.start();
 				cronoStarted = 3;
+				Message msg = Message.obtain();
+				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				try {
+					mService.send(msg);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			else {
 				if (cronoStarted==3)
@@ -450,14 +458,12 @@ public double setProbabilityTrasmission(int n){
 				cronoStarted = -1;
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				QueueMsg coda = new QueueMsg();
+				
 				Calendar cal = Calendar.getInstance();
 				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_4.ordinal();
-				
-				coda.setDuration(durataCodaInMinuti);
-				coda.setTimestamp(lastTimestamp);
-				coda.setIdGame(Attraction.GAME_4.ordinal()); 
+				QueueMsg coda = new QueueMsg(Attraction.GAME_4.ordinal(),lastTimestamp,durataCodaInMinuti);
+				 
 				
 				application.insertQueue(3, coda); 
 				
@@ -476,6 +482,8 @@ public double setProbabilityTrasmission(int n){
 		float rate = rb.getRating();
 		EditText et = (EditText) dialog.getDialog().findViewById(R.id.editText1);
 		String comment = et.getText().toString();
+		Calendar cal = Calendar.getInstance();
+		lastTimestamp = cal.getTime();
 				
 		application.insertOpinion(lastGameId, localuser, new Opinion(lastGameId,localuser,lastTimestamp, comment));
 		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rate));
@@ -488,6 +496,8 @@ public double setProbabilityTrasmission(int n){
 	@Override
 	public void onDialogNegativeClick(DialogFragment dialog) {
 		
+		Calendar cal = Calendar.getInstance();
+		lastTimestamp = cal.getTime();
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);	
 		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rb.getRating()));
 		Toast toast = Toast.makeText(getApplicationContext(), "Valutazione salvata", Toast.LENGTH_SHORT);
