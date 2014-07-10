@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import cnr.Common.UserContext;
+
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -47,13 +49,15 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	private static final String TAG = "ActivityDroidPark";
 	
 	private ApplicationDroidPark application;
+	private static Date lastTimestamp;
+	private static int lastGameId;
 	
 	Messenger mService;
 	boolean mBound = false;
 	ChatListFragment chatListFragment;
 	RoomFragment roomFrag;
 	
-	Integer localuser;
+	int localuser;
 
 	final Messenger incomingMessenger = new Messenger(new IncomingHandler());
 
@@ -366,28 +370,22 @@ public double setProbabilityTrasmission(int n){
 				crono1.stop();
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				QueueMsg coda = new QueueMsg();
-				RatingMsg rating = new RatingMsg();
+				QueueMsg coda = new QueueMsg();				
 				Calendar cal = Calendar.getInstance();
-				Date creationDate = cal.getTime();
-				coda.setDuration(durataCodaInMinuti);
-				coda.setTimestamp(creationDate);
-				coda.setIdGame(Attraction.GAME_1.ordinal()); // da ricavare tramite lo UserContext di cameo
-				rating.setIdGame(Attraction.GAME_1.ordinal());
-				rating.setIdUser(localuser);
-				rating.setTimestamp(creationDate);
-				rating.setEval(2); // TODO: popup per valutazione, intanto valore 2 predefinito
-				application.insertQueue(0, coda); // da generalizzare in base al bottone premuto
-				application.insertRating(0, localuser, rating);
+				lastTimestamp = cal.getTime();
+				lastGameId =  Attraction.GAME_1.ordinal();
 				
+				coda.setDuration(durataCodaInMinuti);
+				coda.setTimestamp(lastTimestamp);
+				coda.setIdGame(Attraction.GAME_1.ordinal()); 
+				application.insertQueue(0, coda); // da generalizzare in base al bottone premuto
+								
 				cronoStarted = -1;
 				gameEvaluation();
-				
-				
+								
 				// Chiamare Spread and Wait
 				}
-				// TODO: insieme alla valutazione permettere l'inserimento di un'opinione (facoltativa)
-				// massimo tot caratteri
+				
 			}
 		
 		
@@ -405,18 +403,16 @@ public double setProbabilityTrasmission(int n){
 				cronoStarted = -1;
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				QueueMsg coda = new QueueMsg();
-				RatingMsg rating = new RatingMsg();
+				QueueMsg coda = new QueueMsg();				
 				Calendar cal = Calendar.getInstance();
-				Date creationDate = cal.getTime();
+				lastTimestamp = cal.getTime();
+				lastGameId =  Attraction.GAME_2.ordinal();
+				
 				coda.setDuration(durataCodaInMinuti);
-				coda.setTimestamp(creationDate);
-				coda.setIdGame(Attraction.GAME_2.ordinal()); // da ricavare tramite lo UserContext di cameo
-				rating.setIdGame(Attraction.GAME_2.ordinal());
-				rating.setIdUser(localuser);
-				rating.setTimestamp(creationDate);
-				rating.setEval(2); // TODO: popup per valutazione, intanto valore 2 predefinito
-				//queueList.put(0, coda); // da generalizzare in base al bottone premuto
+				coda.setTimestamp(lastTimestamp);
+				coda.setIdGame(Attraction.GAME_2.ordinal()); 
+				application.insertQueue(1, coda); // da generalizzare in base al bottone premuto
+				
 				gameEvaluation();
 				
 				// Chiamare Spread and Wait
@@ -438,20 +434,18 @@ public double setProbabilityTrasmission(int n){
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
 				QueueMsg coda = new QueueMsg();
-				RatingMsg rating = new RatingMsg();
 				Calendar cal = Calendar.getInstance();
 				Date creationDate = cal.getTime();
+				lastGameId =  Attraction.GAME_3.ordinal();
+				
 				coda.setDuration(durataCodaInMinuti);
 				coda.setTimestamp(creationDate);
-				coda.setIdGame(Attraction.GAME_3.ordinal()); // da ricavare tramite lo UserContext di cameo
-				rating.setIdGame(Attraction.GAME_3.ordinal());
-				rating.setIdUser(localuser);
-				rating.setTimestamp(creationDate);
-				rating.setEval(2); // TODO: popup per valutazione, intanto valore 2 predefinito
-				//queueList.put(0, coda); // da generalizzare in base al bottone premuto
+				coda.setIdGame(Attraction.GAME_3.ordinal()); 
+				
+				application.insertQueue(2, coda);
+				
 				gameEvaluation();
-				
-				
+								
 				// Chiamare Spread and Wait
 				}
 			}
@@ -471,17 +465,16 @@ public double setProbabilityTrasmission(int n){
 				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
 				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
 				QueueMsg coda = new QueueMsg();
-				RatingMsg rating = new RatingMsg();
 				Calendar cal = Calendar.getInstance();
-				Date creationDate = cal.getTime();
+				lastTimestamp = cal.getTime();
+				lastGameId =  Attraction.GAME_4.ordinal();
+				
 				coda.setDuration(durataCodaInMinuti);
-				coda.setTimestamp(creationDate);
-				coda.setIdGame(Attraction.GAME_4.ordinal()); // da ricavare tramite lo UserContext di cameo
-				rating.setIdGame(Attraction.GAME_4.ordinal());
-				rating.setIdUser(localuser);
-				rating.setTimestamp(creationDate);
-				rating.setEval(2); // TODO: popup per valutazione, intanto valore 2 predefinito
-				//queueList.put(0, coda); // da generalizzare in base al bottone premuto
+				coda.setTimestamp(lastTimestamp);
+				coda.setIdGame(Attraction.GAME_4.ordinal()); 
+				
+				application.insertQueue(3, coda); 
+				
 				gameEvaluation();
 				
 				
@@ -490,15 +483,17 @@ public double setProbabilityTrasmission(int n){
 			}
 		}
 	}
-
+		
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog) {
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);
-		rb.getRating();
+		float rate = rb.getRating();
 		EditText et = (EditText) dialog.getDialog().findViewById(R.id.editText1);
-		String comment = et.getText().toString();				
-		// TODO: SAVE THE RATING		
-		// TODO: SAVE THE COMMENT
+		String comment = et.getText().toString();
+				
+		application.insertOpinion(lastGameId, localuser, new Opinion(lastGameId,localuser,lastTimestamp, comment));
+		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rate));
+		
 		Toast toast = Toast.makeText(getApplicationContext(), "Hai lasciato un commento", Toast.LENGTH_SHORT);
 		toast.show();
 				
@@ -506,17 +501,17 @@ public double setProbabilityTrasmission(int n){
 
 	@Override
 	public void onDialogNegativeClick(DialogFragment dialog) {
-		// TODO Auto-generated method stub
-		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);
-		rb.getRating();		
+		
+		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);	
+		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rb.getRating()));
 		Toast toast = Toast.makeText(getApplicationContext(), "Valutazione salvata", Toast.LENGTH_SHORT);
 		toast.show();
-		// TODO: SAVE THE RATING
+		
 	}
 
 	@Override
 	public void onDialogNeutralClick(DialogFragment dialog) {
-		// TODO Auto-generated method stub
+		
 		dialog.dismiss();
 	}
 	
