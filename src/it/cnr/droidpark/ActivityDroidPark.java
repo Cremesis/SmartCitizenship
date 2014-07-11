@@ -39,28 +39,55 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	private static Date lastTimestamp;
 	private static int lastGameId;
 	
+	int cronoStarted = -1;
+	
 	Messenger mService;
 	boolean mBound = false;
-	ChatListFragment chatListFragment;
-	RoomFragment roomFrag;
 	
 	int localuser;
 
 	final Messenger incomingMessenger = new Messenger(new IncomingHandler());
 
-	//LinkedHashMap<Integer, String> chatList;
-	//HashSet<Integer> followedRooms;
+	// ChatListFragment chatListFragment;
+	// RoomFragment roomFrag;
+	// LinkedHashMap<Integer, String> chatList;
+	// HashSet<Integer> followedRooms;
+	// Hashtable<Integer, ArrayList<String>> roomMsgs; //solo una roomID e lista dei relativi messaggi
 	
-	Hashtable<Integer, ArrayList<String>> roomMsgs; //solo una roomID e lista dei relativi messaggi
 
 	@SuppressLint("HandlerLeak")
-	class IncomingHandler extends Handler {
+	class IncomingHandler extends Handler { // Handles incoming messages from the Service
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 				case ServiceDroidPark.USER:{
+					Log.d(TAG, "Local user id: " + localuser);
 					localuser = (Integer) msg.obj;
 				}
+				break;
+				
+				case ServiceDroidPark.NEW_QUEUE_INSERTED:{
+					Log.d(TAG, "NEW_QUEUE_INSERTED received");
+					QueueMsg queue = msg.getData().getParcelable("queue");
+					// TODO: show new time queue.getDuration() for game queue.getIdGame()
+				}
+				break;
+				
+				case ServiceDroidPark.NEW_RATING_INSERTED:{
+					Log.d(TAG, "NEW_RATING_INSERTED received");
+					RatingMsg rating = msg.getData().getParcelable("rating");
+					// TODO: show new average rating application.getRatingAverage(rating.getIdGame()) for game rating.getIdGame()
+				}
+				break;
+				
+				case ServiceDroidPark.NEW_OPINION_INSERTED:{
+					Log.d(TAG, "NEW_OPINION_INSERTED received");
+					// TODO: decide what to do in this case...
+				}
+				break;
+				
+				case ServiceDroidPark.KILL_APP:
+					finish();
 				break;
 				
 				/*case EntertainmentService.CREATED_REMOTE_ROOM: {
@@ -75,10 +102,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 					chatList.remove(msg.arg1);
 					chatListFragment.removeRoom(msg.arg1);
 				}
-				break;
-				
-				case EntertainmentService.KILL_APP:
-					finish();
 				break;
 				
 				case EntertainmentService.DISPLAY_CHAT_MSGS:{
@@ -236,13 +259,13 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		}
 	}*/
 	
-	public void sendQueueMsg(QueueMsg queue){
-		Log.d(TAG, "Sending queue msg");
-		application.insertQueue(queue.getIdGame(), queue);
+	public void sendApplicationMsg(ApplicationMsg appMsg){
+		Log.d(TAG, "Sending app msg");
+		
 		Bundle args = new Bundle();
-		args.putParcelable("queue", queue);
+		args.putParcelable("msg", appMsg);
 		Message msg = Message.obtain();
-		msg.what = ServiceDroidPark.SEND_QUEUE_MSG;
+		msg.what = ServiceDroidPark.SEND_APP_MSG;
 		msg.setData(args);
 		
 		try {
@@ -301,11 +324,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 			e.printStackTrace();
 		}
 	}*/
-	
-	//AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
-	
-	
-	int cronoStarted = -1;
 	
 	public void gameEvaluation(){
 		RatingFragmentDialog ratingFrag = new RatingFragmentDialog();
