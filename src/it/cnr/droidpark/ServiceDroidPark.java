@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -65,9 +66,6 @@ public class ServiceDroidPark extends Service{
 	
 	private long CAMEOAppKey;
 	
-	private Set<InetAddress> notInQueue;
-	private Set<InetAddress> inQueue;
-	
 	private Hashtable<InetAddress, HashMap<ContextKey, Boolean>> neighbors; // Neighbors ApplicationContext that use this application
 
 	//private Hashtable<Integer, ArrayList<InetAddress>> activeChats;
@@ -108,8 +106,6 @@ public class ServiceDroidPark extends Service{
 		
 		application = (ApplicationDroidPark) getApplication();
 		
-		inQueue = new HashSet<InetAddress>();
-		notInQueue = new HashSet<InetAddress>();
 		neighbors = new Hashtable<InetAddress, HashMap<ContextKey,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
@@ -124,18 +120,6 @@ public class ServiceDroidPark extends Service{
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
 		}
-	}
-	
-	/**
-	 * Return in which queue is the local user
-	 * @return the queue, or null if she is not in queue
-	 */
-	public Attraction whichQueue() {
-		if(appContext.getValue(ContextKey.QUEUE_1.ordinal()) != null) return Attraction.GAME_1;
-		if(appContext.getValue(ContextKey.QUEUE_2.ordinal()) != null) return Attraction.GAME_2;
-		if(appContext.getValue(ContextKey.QUEUE_3.ordinal()) != null) return Attraction.GAME_3;
-		if(appContext.getValue(ContextKey.QUEUE_4.ordinal()) != null) return Attraction.GAME_4;
-		return null;
 	}
 	
 	@Override
@@ -180,14 +164,6 @@ public class ServiceDroidPark extends Service{
 					}
 					
 					switch(entry.getKey()) {
-						case QUEUE_1:
-						case QUEUE_2:
-						case QUEUE_3:
-						case QUEUE_4: {
-							// TODO: We know in which attraction the user is in queue. What do we do with this?
-						}
-						break;
-						
 						case PREF_1: {
 							// TODO: Send out opinion about the "1" attraction if we have it
 						}
@@ -205,18 +181,6 @@ public class ServiceDroidPark extends Service{
 						
 						case PREF_4: {
 							// TODO: Send out opinion about the "4" attraction 
-						}
-						break;
-						
-						case SAW: {
-							notInQueue.add(thisNeighbor);
-							inQueue.remove(thisNeighbor);
-						}
-						break;
-						
-						case WMH: {
-							inQueue.add(thisNeighbor);
-							notInQueue.remove(thisNeighbor);
 						}
 						break;
 						
@@ -291,8 +255,6 @@ public class ServiceDroidPark extends Service{
 				// and then add the third more young (if exists) in its place
 				
 				neighborsUserContext.remove(thisNeighbor);
-				notInQueue.remove(thisNeighbor);
-				inQueue.remove(thisNeighbor);
 				neighbors.remove(thisNeighbor);
 				
 				numberOfNeighbors = neighborsUserContext.size();
@@ -334,33 +296,40 @@ public class ServiceDroidPark extends Service{
 		public void onMessageReceived(byte[] arg0, byte[] arg1)
 				throws RemoteException {
 			try {
-			// condizione su tipo di algoritmo
-			// ipotesi Probabilistic Transmission
-			// Evito di ritrasmetterlo a lui
-			
-			InetAddress remoteAddr = InetAddress.getByAddress(arg1);
-			QueueMsg qm = (QueueMsg) readObject(arg0);
-			probAlgorithm(qm);
-			// TODO Gestione messaggio in arrivo, servir� una condizione su tipo di messaggio e sulla presenza in coda per switchare tra un algoritmo in coda e l'altro
+				InetAddress remoteAddr = InetAddress.getByAddress(arg1);
 				
-			/*ChatMsg chatmsg = (ChatMsg) readObject(arg0);
-			ArrayList<String> messages;
-			synchronized(roomMsg){
-				if(!roomMsg.containsKey((chatmsg.getRoomName()).hashCode())){
-					messages = new ArrayList<String>();
+				Object msg = (Object) readObject(arg0);
+				if(msg instanceof RatingMsg) {
+					// TODO
+					RatingMsg rating = (RatingMsg) msg;
+				} else if(msg instanceof QueueMsg) {
+					// TODO
+					QueueMsg queue = (QueueMsg) msg;
+					probAlgorithm(queue);
+				} else if(msg instanceof Opinion) {
+					// TODO
+					Opinion opinion = (Opinion) msg;
 				}
-				else
-					messages = roomMsg.get((chatmsg.getRoomName()).hashCode());
-			
-				messages.add((String)chatmsg.getContent());
-				roomMsg.put((chatmsg.getRoomName()).hashCode(), messages);
-			}
-			Message msg = Message.obtain();
-			msg.obj = messages;
-			msg.arg1 = (chatmsg.getRoomName()).hashCode();
-			msg.what = DISPLAY_CHAT_MSGS;
-			mActivity.send(msg);
-			*/
+				// TODO Gestione messaggio in arrivo, servir� una condizione su tipo di messaggio e sulla presenza in coda per switchare tra un algoritmo in coda e l'altro
+					
+				/*ChatMsg chatmsg = (ChatMsg) readObject(arg0);
+				ArrayList<String> messages;
+				synchronized(roomMsg){
+					if(!roomMsg.containsKey((chatmsg.getRoomName()).hashCode())){
+						messages = new ArrayList<String>();
+					}
+					else
+						messages = roomMsg.get((chatmsg.getRoomName()).hashCode());
+				
+					messages.add((String)chatmsg.getContent());
+					roomMsg.put((chatmsg.getRoomName()).hashCode(), messages);
+				}
+				Message msg = Message.obtain();
+				msg.obj = messages;
+				msg.arg1 = (chatmsg.getRoomName()).hashCode();
+				msg.what = DISPLAY_CHAT_MSGS;
+				mActivity.send(msg);
+				*/
 			} catch(UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
@@ -420,6 +389,7 @@ public class ServiceDroidPark extends Service{
 		}
 	}
 	
+	@SuppressLint("HandlerLeak")
 	private class IncomingHandler extends Handler { //gestisce la comunicazione tra i messenger di actvity e service (dall'activity al service)
 		@Override
 		public void handleMessage(Message msg) {
@@ -432,25 +402,14 @@ public class ServiceDroidPark extends Service{
 				case SEND_QUEUE_MSG:{ // QueueMsg generated by the user. You have to send it to everyone.
 					Log.d(TAG, "SEND_QUEUE_MSG received");
 					QueueMsg queue = msg.getData().getParcelable("queue");
-					appContext.removeValue(ContextKey.QUEUE_1.ordinal());
-					appContext.removeValue(ContextKey.QUEUE_2.ordinal());
-					appContext.removeValue(ContextKey.QUEUE_3.ordinal());
-					appContext.removeValue(ContextKey.QUEUE_4.ordinal());
-					appContext.removeValue(ContextKey.WMH.ordinal());
-					appContext.addValue(ContextKey.SAW.ordinal(), true);
-					try {
-						appContext.update(cameo, CAMEOAppKey);
-						Log.e(TAG, "Queue updated");
-					} catch (RemoteException e) {
-						Log.e(TAG, Log.getStackTraceString(e));
-					}
 					
 					sendMulticastMSG(queue);
 				}
 				break;
 				
+				// TODO: RIVEDERE dopo la discussione di venerdì mattina
 				case PERFECT_FORWARDER_CHECK:{ // messaggio ricevuto dall'app quando entro in coda e voglio cedere le copie dei messaggi
-					Log.d(TAG, "PERFECT_FORWARDER_CHECK received");
+/*					Log.d(TAG, "PERFECT_FORWARDER_CHECK received");
 					
 					if (appContext.getValuesMap().containsKey(ContextKey.SAW.ordinal())){ //&& {  // TODO condizione sul perfect forwarder
 						//cercare un nuovo perfect forwarder tra i miei vicini NON IN CODA e passargli le copie
@@ -472,10 +431,10 @@ public class ServiceDroidPark extends Service{
 								// vedere se il messaggio riguarda la coda in cui sto entrando se s� lo elimino 
 								  //              altrimenti lo invio secondo l'algoritmo probabilistico
 					 	}
-					}
+					}*/
 				}
 				
-				case ADD_CONTEXT_VALUE:{ //messaggio inviato dall'activity quando spunto una room remota per segnalare il mio interesse
+				case ADD_CONTEXT_VALUE:{
 					// TODO
 					/*
 					String roomName = msg.obj.toString();
@@ -531,13 +490,16 @@ public double setProbabilityTrasmission(int n){
 		// che io scelga il miglior forwarder tra i miei vicini NON in coda
 		// (perché così gestiscono le copie multiple), nel tuo caso penso che
 		// non ci siano differenze.
+		// EDIT: come non detto, nemmeno nello Spread and Wait si devono fare
+		// distinzioni da quanto detto venerdì mattina!
+		/*
 		double p = setProbabilityTrasmission(inQueue.size());
 		if (inQueue.size()!=0){
 			for (InetAddress i : inQueue)
 				if (Math.random()< p){
 					sendMSGToPeer(msg, i);
 				}
-		}
+		}*/
 	}
 
 		public void sendMulticastMSG(ApplicationMsg msg) {
