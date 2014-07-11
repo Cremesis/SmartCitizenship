@@ -1,4 +1,4 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,32 +9,36 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 @SuppressLint("SimpleDateFormat")
-public class Opinion implements Parcelable {
+public class RatingMsg implements ApplicationMsg {
+	
+	private static final long serialVersionUID = -8179313354743538606L;
 	
 	private int idGame;
 	private int idUser;
 	private Date timestamp;
-	private String msg;
+	private float eval;
+	private int numCopies;
 	
-	public Opinion(int idGame, int idUser, Date timestamp, String msg) {
+	public RatingMsg(int idGame, int idUser, Date timestamp, float eval, int numCopies) {
 		super();
 		this.idGame = idGame;
 		this.idUser = idUser;
 		this.timestamp = timestamp;
-		this.msg = msg;
+		this.eval = eval;
+		this.numCopies = numCopies;
 	}
 	
-	public static final Parcelable.Creator<Opinion> CREATOR = new Parcelable.Creator<Opinion>() {
-        public Opinion createFromParcel(Parcel in) {
-            return new Opinion(in);
+	public static final Parcelable.Creator<RatingMsg> CREATOR = new Parcelable.Creator<RatingMsg>() {
+        public RatingMsg createFromParcel(Parcel in) {
+            return new RatingMsg(in);
         }
 
-        public Opinion[] newArray(int size) {
-            return new Opinion[size];
+        public RatingMsg[] newArray(int size) {
+            return new RatingMsg[size];
         }
     };
     
-    private Opinion(Parcel in) {
+    private RatingMsg(Parcel in) {
     	DateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
     	
     	idGame = in.readInt();
@@ -46,17 +50,19 @@ public class Opinion implements Parcelable {
 			timestamp.setTime(0);
 			e.printStackTrace();
 		}
-    	msg = in.readString();
+    	eval = in.readFloat();
+    	numCopies = in.readInt();
     }
     
-    public Opinion() {}
+    public RatingMsg() {}
 	
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
 		out.writeInt(idGame);
 		out.writeInt(idUser);
 		out.writeString(timestamp.toString());
-		out.writeString(msg);
+		out.writeFloat(eval);
+		out.writeInt(numCopies);
 	}
 	
 	@Override
@@ -76,16 +82,26 @@ public class Opinion implements Parcelable {
 	public void setIdUser(int idUser) {
 		this.idUser = idUser;
 	}
+	@Override
 	public Date getTimestamp() {
 		return timestamp;
 	}
-	public void setTimestamp(Date timeStamp) {
-		this.timestamp = timeStamp;
+	@Override
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
 	}
-	public String getMsg() {
-		return msg;
+	public float getEval() {
+		return eval;
 	}
-	public void setMsg(String msg) {
-		this.msg = msg;
+	public void setEval(int eval) {
+		this.eval = eval;
+	}
+	@Override
+	public int getNumCopies() {
+		return numCopies;
+	}
+	@Override
+	public void setNumCopies(int numCopies) {
+		this.numCopies = numCopies;
 	}
 }

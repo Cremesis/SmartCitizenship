@@ -1,4 +1,4 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
 public enum ContextKey {
 	QUEUE_1, QUEUE_2, QUEUE_3, QUEUE_4,

@@ -1,4 +1,4 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,34 +9,32 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 @SuppressLint("SimpleDateFormat")
-public class RatingMsg implements ApplicationMsg {
-	
-	private static final long serialVersionUID = -8179313354743538606L;
+public class Opinion implements Parcelable {
 	
 	private int idGame;
 	private int idUser;
 	private Date timestamp;
-	private float eval;
+	private String msg;
 	
-	public RatingMsg(int idGame, int idUser, Date timestamp, float eval) {
+	public Opinion(int idGame, int idUser, Date timestamp, String msg) {
 		super();
 		this.idGame = idGame;
 		this.idUser = idUser;
 		this.timestamp = timestamp;
-		this.eval = eval;
+		this.msg = msg;
 	}
 	
-	public static final Parcelable.Creator<RatingMsg> CREATOR = new Parcelable.Creator<RatingMsg>() {
-        public RatingMsg createFromParcel(Parcel in) {
-            return new RatingMsg(in);
+	public static final Parcelable.Creator<Opinion> CREATOR = new Parcelable.Creator<Opinion>() {
+        public Opinion createFromParcel(Parcel in) {
+            return new Opinion(in);
         }
 
-        public RatingMsg[] newArray(int size) {
-            return new RatingMsg[size];
+        public Opinion[] newArray(int size) {
+            return new Opinion[size];
         }
     };
     
-    private RatingMsg(Parcel in) {
+    private Opinion(Parcel in) {
     	DateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
     	
     	idGame = in.readInt();
@@ -48,17 +46,17 @@ public class RatingMsg implements ApplicationMsg {
 			timestamp.setTime(0);
 			e.printStackTrace();
 		}
-    	eval = in.readFloat();
+    	msg = in.readString();
     }
     
-    public RatingMsg() {}
+    public Opinion() {}
 	
 	@Override
 	public void writeToParcel(Parcel out, int flags) {
 		out.writeInt(idGame);
 		out.writeInt(idUser);
 		out.writeString(timestamp.toString());
-		out.writeFloat(eval);
+		out.writeString(msg);
 	}
 	
 	@Override
@@ -81,13 +79,13 @@ public class RatingMsg implements ApplicationMsg {
 	public Date getTimestamp() {
 		return timestamp;
 	}
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
+	public void setTimestamp(Date timeStamp) {
+		this.timestamp = timeStamp;
 	}
-	public float getEval() {
-		return eval;
+	public String getMsg() {
+		return msg;
 	}
-	public void setEval(int eval) {
-		this.eval = eval;
+	public void setMsg(String msg) {
+		this.msg = msg;
 	}
 }

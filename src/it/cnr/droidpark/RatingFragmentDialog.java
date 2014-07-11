@@ -1,5 +1,6 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
+import it.cnr.droidpark.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -62,7 +63,7 @@ public class RatingFragmentDialog extends DialogFragment{
                });
 				
                 LayoutInflater inflater = getActivity().getLayoutInflater();
-                builder.setView(inflater.inflate(it.cnr.proximity.R.layout.rating_fragment_dialog, null));               
+                builder.setView(inflater.inflate(R.layout.rating_fragment_dialog, null));               
                
         return builder.create();
         

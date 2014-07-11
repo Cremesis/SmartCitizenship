@@ -1,4 +1,4 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
 import java.io.Serializable;
 

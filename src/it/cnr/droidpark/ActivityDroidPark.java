@@ -1,15 +1,13 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
-import it.cnr.entertainment.RatingFragmentDialog.NoticeDialogListener;
-import it.cnr.proximity.R;
+import it.cnr.droidpark.RatingFragmentDialog.NoticeDialogListener;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.Map.Entry;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +21,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -54,6 +53,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	
 	Hashtable<Integer, ArrayList<String>> roomMsgs; //solo una roomID e lista dei relativi messaggi
 
+	@SuppressLint("HandlerLeak")
 	class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
@@ -237,6 +237,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	}*/
 	
 	public void sendQueueMsg(QueueMsg queue){
+		Log.d(TAG, "Sending queue msg");
 		application.insertQueue(queue.getIdGame(), queue);
 		Bundle args = new Bundle();
 		args.putParcelable("queue", queue);
@@ -309,7 +310,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	public void gameEvaluation(){
 		RatingFragmentDialog ratingFrag = new RatingFragmentDialog();
 		ratingFrag.show(getSupportFragmentManager(), "RATING");
-		
 	}
 	
  		
@@ -321,7 +321,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		ToggleButton t3 = (ToggleButton) findViewById(R.id.toggleButton3);
 		
 		// devo cambiare contesto: tipo algoritmo,coda 
-		
 		
 		switch (v.getId()){
 		case R.id.toggleButton0:
@@ -335,7 +334,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				try {
 					mService.send(msg);
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
@@ -352,7 +350,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_1.ordinal();
 				
-				QueueMsg coda = new QueueMsg(Attraction.GAME_1.ordinal(),lastTimestamp,durataCodaInMinuti); 
+				QueueMsg coda = new QueueMsg(Attraction.GAME_1.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES); 
 				application.insertQueue(0, coda); // da generalizzare in base al bottone premuto
 								
 				cronoStarted = -1;
@@ -390,7 +388,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				Calendar cal = Calendar.getInstance();
 				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_2.ordinal();
-				QueueMsg coda = new QueueMsg(Attraction.GAME_2.ordinal(),lastTimestamp,durataCodaInMinuti);
+				QueueMsg coda = new QueueMsg(Attraction.GAME_2.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
 			
 				application.insertQueue(1, coda); // da generalizzare in base al bottone premuto
 				
@@ -426,7 +424,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				Calendar cal = Calendar.getInstance();
 				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_3.ordinal();
-				QueueMsg coda = new QueueMsg(Attraction.GAME_3.ordinal(),lastTimestamp,durataCodaInMinuti);
+				QueueMsg coda = new QueueMsg(Attraction.GAME_3.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
 			
 				application.insertQueue(2, coda);
 				
@@ -462,7 +460,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				Calendar cal = Calendar.getInstance();
 				lastTimestamp = cal.getTime();
 				lastGameId =  Attraction.GAME_4.ordinal();
-				QueueMsg coda = new QueueMsg(Attraction.GAME_4.ordinal(),lastTimestamp,durataCodaInMinuti);
+				QueueMsg coda = new QueueMsg(Attraction.GAME_4.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
 				 
 				
 				application.insertQueue(3, coda); 
@@ -486,7 +484,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		lastTimestamp = cal.getTime();
 				
 		application.insertOpinion(lastGameId, localuser, new Opinion(lastGameId,localuser,lastTimestamp, comment));
-		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rate));
+		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rate, application.NUMBER_OF_COPIES));
 		
 		Toast toast = Toast.makeText(getApplicationContext(), "Hai lasciato un commento", Toast.LENGTH_SHORT);
 		toast.show();
@@ -495,11 +493,10 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 
 	@Override
 	public void onDialogNegativeClick(DialogFragment dialog) {
-		
 		Calendar cal = Calendar.getInstance();
 		lastTimestamp = cal.getTime();
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);	
-		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rb.getRating()));
+		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rb.getRating(), application.NUMBER_OF_COPIES));
 		Toast toast = Toast.makeText(getApplicationContext(), "Valutazione salvata", Toast.LENGTH_SHORT);
 		toast.show();
 		
@@ -507,7 +504,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 
 	@Override
 	public void onDialogNeutralClick(DialogFragment dialog) {
-		
 		dialog.dismiss();
 	}
 	

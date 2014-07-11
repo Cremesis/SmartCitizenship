@@ -1,6 +1,6 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
-import it.cnr.proximity.R;
+import it.cnr.droidpark.R;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -67,10 +67,9 @@ public class ServiceDroidPark extends Service{
 	
 	private Set<InetAddress> notInQueue;
 	private Set<InetAddress> inQueue;
-	private Hashtable<InetAddress, HashMap<ContextKey, Boolean>> neighbors;// Contesto applicativo dei vicini
-
-	private Hashtable<InetAddress, UserContext> neighborsUserContext;
 	
+	private Hashtable<InetAddress, HashMap<ContextKey, Boolean>> neighbors; // Neighbors ApplicationContext that use this application
+
 	//private Hashtable<Integer, ArrayList<InetAddress>> activeChats;
 	//private Hashtable<Integer, ArrayList<String>> roomMsg;
 	//private Hashtable<Integer, ArrayList<ChatMsg>> localMessages; // struttura dati locale per mantenere i messaggi delle varie room 
@@ -83,7 +82,8 @@ public class ServiceDroidPark extends Service{
 	PlatformInterface cameo = null;
 	boolean connectedToCameo = false;
 	
-	private static int numberOfNeighbors;
+	private int numberOfNeighbors; // Neighbors that use CAMEO, not this specific application
+	private Hashtable<InetAddress, UserContext> neighborsUserContext;
 
 	public Integer localuser;
 	
@@ -260,7 +260,7 @@ public class ServiceDroidPark extends Service{
 			Log.d(TAG, "neighborIn");
 			try {
 				if(arg0.isEmpty()) return; // when it's the first time that a user enters our range and that we see her
-				Log.d(TAG, "id - " + arg0.hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
+				Log.d(TAG, "id: " + arg0.hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				neighborsUserContext.put(thisNeighbor, arg0);
 				
@@ -285,7 +285,7 @@ public class ServiceDroidPark extends Service{
 			Log.d(TAG, "neighborOut");
 			try {
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg0);
-				Log.d(TAG, "name - " + neighborsUserContext.get(thisNeighbor).getName());
+				Log.d(TAG, "name: " + neighborsUserContext.get(thisNeighbor).getName());
 				
 				// TODO: check and eventually delete this neighbor from the youngest,
 				// and then add the third more young (if exists) in its place
@@ -309,9 +309,18 @@ public class ServiceDroidPark extends Service{
 		public void neighborUserContextUpdated(UserContext remoteUserContext, byte[] arg1)
 				throws RemoteException {
 			Log.d(TAG, "neighborUserContextUpdated");
-			
-			
-			Log.d(TAG, "id - " + remoteUserContext.hashCode() + " name: " + remoteUserContext.getName());
+			try {
+				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
+				neighborsUserContext.put(thisNeighbor, remoteUserContext);
+				
+				// TODO: check and eventually save this neighbor if it is the youngest (keep maximum two)
+				
+				numberOfNeighbors = neighborsUserContext.size();
+				Log.d(TAG, "id: " + remoteUserContext.hashCode() + " - name: " + remoteUserContext.getName() + " - age: " + remoteUserContext.getAge());
+				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
+			} catch(UnknownHostException e) {
+				Log.e(TAG, Log.getStackTraceString(e));
+			}
 		}
 
 		@Override
@@ -552,7 +561,6 @@ public double setProbabilityTrasmission(int n){
 				Log.e("TAG", "Got exception while sending message to peer: " +
 						Log.getStackTraceString(re));
 			}
-			
 		}
 		
 		private static byte[] writeObject(Object obj) {

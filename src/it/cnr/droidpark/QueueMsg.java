@@ -1,4 +1,4 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -13,16 +13,18 @@ public class QueueMsg implements ApplicationMsg {
 	
 	private static final long serialVersionUID = -1410878463652251245L;
 
-	public QueueMsg(int idGame, Date timestamp, int duration) {
+	private int idGame;
+	private Date timestamp;
+	private int duration;
+	private int numCopies;
+	
+	public QueueMsg(int idGame, Date timestamp, int duration, int numCopies) {
 		super();
 		this.idGame = idGame;
 		this.timestamp = timestamp;
 		this.duration = duration;
+		this.numCopies = numCopies;
 	}
-	
-	private int idGame;
-	private Date timestamp;
-	private int duration;
 	
     public static final Parcelable.Creator<QueueMsg> CREATOR = new Parcelable.Creator<QueueMsg>() {
         public QueueMsg createFromParcel(Parcel in) {
@@ -46,6 +48,7 @@ public class QueueMsg implements ApplicationMsg {
 			e.printStackTrace();
 		}
     	duration = in.readInt();
+    	numCopies = in.readInt();
     }
     
     public QueueMsg() {}
@@ -55,6 +58,7 @@ public class QueueMsg implements ApplicationMsg {
 		out.writeInt(idGame);
 		out.writeString(timestamp.toString());
 		out.writeInt(duration);
+		out.writeInt(numCopies);
 	}
 	
 	@Override
@@ -62,9 +66,11 @@ public class QueueMsg implements ApplicationMsg {
 		return 0;
 	}
 	
+	@Override
 	public Date getTimestamp() {
 		return timestamp;
 	}
+	@Override
 	public void setTimestamp(Date timestamp) {
 		this.timestamp = timestamp;
 	}
@@ -79,5 +85,13 @@ public class QueueMsg implements ApplicationMsg {
 	}
 	public void setIdGame(int idGame) {
 		this.idGame = idGame;
+	}
+	@Override
+	public int getNumCopies() {
+		return numCopies;
+	}
+	@Override
+	public void setNumCopies(int numCopies) {
+		this.numCopies = numCopies;
 	}
 }

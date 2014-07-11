@@ -1,6 +1,6 @@
-package it.cnr.entertainment;
+package it.cnr.droidpark;
 
-import it.cnr.proximity.R;
+import it.cnr.droidpark.R;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,8 +10,6 @@ import java.util.Set;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
