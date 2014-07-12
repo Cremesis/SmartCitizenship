@@ -52,7 +52,7 @@ public class ServiceDroidPark extends Service{
 	// Messages FROM Activity TO Service
 	public final static int ACTIVITY_BIND = 100; // Used to pass the messenger to use to communicate with the Activity
 	public final static int SEND_APP_MSG = 101; // User has generated a new ApplicationMsg
-	public final static int PERFECT_FORWARDER_CHECK = 102; // TODO: ??
+	public final static int PERFECT_FORWARDER_IN_QUEUE = 102; // User has multiple Spread and Wait copy to handle in queue
 	public final static int UPDATE_PREF = 103; // User has changed it's preferences about what's interested in
 	public final static int ENTER_QUEUE = 104; // User has entered a queue
 	public final static int SEND_OPINION = 105; // User has generated a new Opinion
@@ -426,37 +426,28 @@ public class ServiceDroidPark extends Service{
 				case ENTER_QUEUE: {
 					Log.d(TAG, "ENTER_QUEUE received");
 					
-					inQueue = false;
+					inQueue = false; //@ivan ma qui non dovrebbe essere true ???
 				}
 				break;
 				
-				// TODO: RIVEDERE dopo la discussione di venerdì mattina
-				case PERFECT_FORWARDER_CHECK:{ // messaggio ricevuto dall'app quando entro in coda e voglio cedere le copie dei messaggi
-/*					Log.d(TAG, "PERFECT_FORWARDER_CHECK received");
+							
+				case PERFECT_FORWARDER_IN_QUEUE:{  
 					
-					if (appContext.getValuesMap().containsKey(ContextKey.SAW.ordinal())){ //&& {  // TODO condizione sul perfect forwarder
-						//cercare un nuovo perfect forwarder tra i miei vicini NON IN CODA e passargli le copie
-					if(notInQueue.size() != 0){
-						int age_min = 1000;
-						InetAddress addr_age_min;
-						for(InetAddress i : notInQueue){
-							UserContext uc = neighborsUserContext.get(i);
-								if (uc.getAge() < age_min) {
-									age_min = uc.getAge();
-									addr_age_min = i;
-								}
-														
-						}
-								//passo le copie al pi� giovane funz(addr_age_min) 
+					ApplicationMsg appMsg = msg.getData().getParcelable("msg");
+					inQueue = true;
+					
+					if(appMsg instanceof QueueMsg) {
+						if(appMsg.getNumCopies()>1 && (appMsg.getIdGame()!=msg.arg1)) // se le copie riguardano la coda in cui entro le elimino						
+						probAlgorithm(appMsg);
 					}
-	
-					else {
-								// vedere se il messaggio riguarda la coda in cui sto entrando se s� lo elimino 
-								  //              altrimenti lo invio secondo l'algoritmo probabilistico
-					 	}
-					}*/
+
+					if(appMsg instanceof RatingMsg){
+						if(appMsg.getNumCopies()>1){
+							probAlgorithm(appMsg);
+						}
+					}
+							
 				}
-				break;
 				
 				case UPDATE_PREF:{
 					// TODO
@@ -504,27 +495,37 @@ public double setProbabilityTrasmission(int n){
 	}
 	
 	public void probAlgorithm(ApplicationMsg msg){
-		// TODO: @Filippo: non capisco perché tu valuti solo il numero
-		// di vicini in coda. Teoricamente, da quello che avevo capito, dovresti
-		// considerare tutti i vicini a prescindere da dove sono per stimare la
-		// probabilità di trasmettere. Inoltre anche chi non è in coda potrebbe
-		// essere interessato a ricevere i pacchetti che mandi dalla coda. No?
-		// Infatti ho avuto un dubbio quando mi hai detto che avevi bisogno
-		// dell'insieme dei vicini "inQueue". Se nello Spread and Wait ha senso
-		// che io scelga il miglior forwarder tra i miei vicini NON in coda
-		// (perché così gestiscono le copie multiple), nel tuo caso penso che
-		// non ci siano differenze.
-		// EDIT: come non detto, nemmeno nello Spread and Wait si devono fare
-		// distinzioni da quanto detto venerdì mattina!
-		/*
-		double p = setProbabilityTrasmission(inQueue.size());
-		if (inQueue.size()!=0){
-			for (InetAddress i : inQueue)
+
+		int k = 0;
+		double p = setProbabilityTrasmission(neighbors.size());
+		if (neighbors.size()!=0){
+		Set<InetAddress> addOk = new HashSet<InetAddress>() {};
+			for (InetAddress i : neighbors.keySet())
 				if (Math.random()< p){
-					sendMSGToPeer(msg, i);
+					k++;
+					addOk.add(i);
 				}
-		}*/
+			if (msg.getNumCopies()<k){   // Idea alternativa mandare le copie ai primi k destinatari
+				msg.setNumCopies(1);
+				sendProbabilisticMulticastMSG(msg, addOk);
+			}
+			
+			msg.setNumCopies(msg.getNumCopies()/k);
+			sendProbabilisticMulticastMSG(msg, addOk);
+		}
 	}
+	
+	public void sendProbabilisticMulticastMSG(ApplicationMsg msg, Set<InetAddress> adds) {
+		
+		if(adds!=null) { //qui ho cambiato l'utilizzo dell'iteratore
+			for(InetAddress address : adds) {//qui c'è nullpointerexception perché activechats non ha roomid
+				//mandare solo ai vicini interessati
+				sendMSGToPeer(msg, address);
+			}
+		}
+	}
+	
+	
 
 		public void sendMulticastMSG(ApplicationMsg msg) {
 			Set<InetAddress> adds = neighborsUserContext.keySet();

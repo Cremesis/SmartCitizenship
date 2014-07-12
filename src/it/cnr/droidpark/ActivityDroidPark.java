@@ -259,6 +259,19 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		}
 	}*/
 	
+	public Message createApplicationMsg(ApplicationMsg appMsg, int what, int arg1){
+		Log.d(TAG, "Create app msg");
+		
+		Bundle args = new Bundle();
+		args.putParcelable("msg", appMsg);
+		Message msg = Message.obtain();
+		msg.what = what;
+		msg.arg1 = arg1;
+		msg.setData(args);
+		return msg;
+		}
+	
+	
 	public void sendApplicationMsg(ApplicationMsg appMsg){
 		Log.d(TAG, "Sending app msg");
 		
@@ -348,13 +361,17 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted=0;
 				Message msg = Message.obtain();
-				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				// if ("sono perfect forwarder")
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_1); // serve conoscere il messaggio da inoltrare
+				// else
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_1);
 				try {
 					mService.send(msg);
-				} catch (RemoteException e) {
-					e.printStackTrace();
-				}
-				
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}				
+					
 				
 				// devo cambiare contesto: tipo algoritmo,coda 		
 			}
@@ -369,7 +386,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				lastGameId =  Attraction.GAME_1.ordinal();
 				
 				QueueMsg coda = new QueueMsg(Attraction.GAME_1.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES); 
-				application.insertQueue(0, coda); // da generalizzare in base al bottone premuto
+				application.insertQueue(0, coda);
 								
 				cronoStarted = -1;
 				gameEvaluation();
@@ -387,13 +404,18 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted = 1;
 				Message msg = Message.obtain();
-				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				// if ("sono perfect forwarder")
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_2); // serve conoscere il messaggio da inoltrare
+				// else
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_2);
 				try {
 					mService.send(msg);
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
+				
 			}
 			else {
 				if (cronoStarted==1)
@@ -408,7 +430,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				lastGameId =  Attraction.GAME_2.ordinal();
 				QueueMsg coda = new QueueMsg(Attraction.GAME_2.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
 			
-				application.insertQueue(1, coda); // da generalizzare in base al bottone premuto
+				application.insertQueue(1, coda); 
 				
 				gameEvaluation();
 				
@@ -423,13 +445,17 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted = 2;
 				Message msg = Message.obtain();
-				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				// if ("sono perfect forwarder")
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_3); // serve conoscere il messaggio da inoltrareaction.GAME_4); // serve conoscere il messaggio da inoltrare
+				// else
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_3);
 				try {
 					mService.send(msg);
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
 			}
 			else {
 				if (cronoStarted==2)
@@ -459,13 +485,17 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted = 3;
 				Message msg = Message.obtain();
-				msg.what = ServiceDroidPark.PERFECT_FORWARDER_CHECK;
+				// if ("sono perfect forwarder")
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_4); // serve conoscere il messaggio da inoltrare
+				// else
+				//msg = createApplicationMsg(appMsg, ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_4);
 				try {
 					mService.send(msg);
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				
 			}
 			else {
 				if (cronoStarted==3)
