@@ -64,15 +64,12 @@ public class ServiceDroidPark extends Service{
 	public static final int NEW_RATING_INSERTED = 203; // A new (or newer) rating message has been saved
 	public static final int NEW_OPINION_INSERTED = 204; // A new (or newer) opinion message has been saved
 	
-	private ApplicationContext appContext;   // Map<ContextKey, Boolean>
-	
+	PlatformInterface cameo = null;
+	boolean connectedToCameo = false;
 	private long CAMEOAppKey;
 	
-	private Hashtable<InetAddress, HashMap<ContextKey, Boolean>> neighbors; // Neighbors ApplicationContext that use this application
-
-	//private Hashtable<Integer, ArrayList<InetAddress>> activeChats;
-	//private Hashtable<Integer, ArrayList<String>> roomMsg;
-	//private Hashtable<Integer, ArrayList<ChatMsg>> localMessages; // struttura dati locale per mantenere i messaggi delle varie room 
+	private ApplicationContext appContext;   // Map<Integer, Boolean>
+	public Integer localuser;
 	
 	private final Messenger incomingMessenger = new Messenger(new IncomingHandler());
 	private Messenger mActivity;
@@ -80,14 +77,11 @@ public class ServiceDroidPark extends Service{
 	private ApplicationDroidPark application;
 	
 	private boolean inQueue = false;
-
-	PlatformInterface cameo = null;
-	boolean connectedToCameo = false;
 	
 	private int numberOfNeighbors; // Neighbors that use CAMEO, not this specific application
 	private Hashtable<InetAddress, UserContext> neighborsUserContext;
-
-	public Integer localuser;
+	private Hashtable<InetAddress, HashMap<ContextKey, Boolean>> neighbors; // Neighbors ApplicationContext that use this application
+	private Hashtable<InetAddress, Integer> youngestForwarders;
 	
 	ServiceConnection sc = new ServiceConnection(){
 
@@ -228,7 +222,7 @@ public class ServiceDroidPark extends Service{
 			Log.d(TAG, "neighborIn");
 			try {
 				if(arg0.isEmpty()) return; // when it's the first time that a user enters our range and that we see her
-				Log.d(TAG, "id: " + arg0.hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
+				Log.d(TAG, "id: " + arg0.getName().hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				neighborsUserContext.put(thisNeighbor, arg0);
 				
@@ -268,9 +262,6 @@ public class ServiceDroidPark extends Service{
 			}
 		}
 
-		/**
-		 * I can't figure out how to say to do the same thing that the neighborIn does. So I replicated its code.
-		 */
 		@Override
 		public void neighborUserContextUpdated(UserContext remoteUserContext, byte[] arg1)
 				throws RemoteException {
@@ -282,7 +273,7 @@ public class ServiceDroidPark extends Service{
 				// TODO: check and eventually save this neighbor if it is the youngest (keep maximum two)
 				
 				numberOfNeighbors = neighborsUserContext.size();
-				Log.d(TAG, "id: " + remoteUserContext.hashCode() + " - name: " + remoteUserContext.getName() + " - age: " + remoteUserContext.getAge());
+				Log.d(TAG, "id: " + remoteUserContext.getName().hashCode() + " - name: " + remoteUserContext.getName() + " - age: " + remoteUserContext.getAge());
 				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
 			} catch(UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
@@ -306,15 +297,20 @@ public class ServiceDroidPark extends Service{
 				if(msg instanceof RatingMsg) {
 					// TODO
 					RatingMsg rating = (RatingMsg) msg;
+					application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
+					if(inQueue) probAlgorithm(rating);
+					else spreadAndWait(rating);
 				} else if(msg instanceof QueueMsg) {
 					// TODO
 					QueueMsg queue = (QueueMsg) msg;
-					probAlgorithm(queue);
+					application.insertQueue(queue.getIdGame(), queue);
+					if(inQueue) probAlgorithm(queue);
+					else spreadAndWait(queue);
 				} else if(msg instanceof Opinion) {
 					// TODO
 					Opinion opinion = (Opinion) msg;
+					application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
 				}
-				// TODO Gestione messaggio in arrivo, servir� una condizione su tipo di messaggio e sulla presenza in coda per switchare tra un algoritmo in coda e l'altro
 					
 				/*ChatMsg chatmsg = (ChatMsg) readObject(arg0);
 				ArrayList<String> messages;
@@ -367,7 +363,7 @@ public class ServiceDroidPark extends Service{
 			
 			Log.d(TAG, "appContext updated");
 			
-			localuser= (cameo.getLocalUserContext(CAMEOAppKey)).hashCode();
+			localuser = cameo.getLocalUserContext(CAMEOAppKey).getName().hashCode();
 			if(mActivity!=null){
 				Message msg = Message.obtain();
 				msg.what = USER;
@@ -488,6 +484,24 @@ public class ServiceDroidPark extends Service{
 					super.handleMessage(msg);
 				}
 		}
+	}
+	
+	public void computeYoungestForwarders() {
+		// FIXME: not checked that much
+		int min1 = Integer.MAX_VALUE, min2 = Integer.MAX_VALUE, currentAge; // min1 <= min2
+		for(InetAddress neighbor : neighbors.keySet()) {
+			currentAge = neighborsUserContext.get(neighbor).getAge();
+			if(currentAge < min1) {
+				min1 = currentAge;
+				min2 = min1;
+			} else if(currentAge > min1 && currentAge < min2) {
+				min2 = currentAge;
+			}
+		}
+	}
+	
+	public void spreadAndWait(ApplicationMsg msg) {
+		// TODO
 	}
 	
 public double setProbabilityTrasmission(int n){

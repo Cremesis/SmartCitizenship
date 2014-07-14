@@ -2,7 +2,6 @@ package it.cnr.droidpark;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -129,16 +128,19 @@ public class ApplicationDroidPark extends Application {
 	 */
 	public boolean insertRating(Integer gameID, Integer userID, RatingMsg rating) {
 		Map<Integer, RatingMsg> gameRatings = ratingList.get(gameID);
+		RatingMsg currentUserRating = null;
 		if(gameRatings != null) {
-			RatingMsg currentUserRating = gameRatings.get(userID);
+			currentUserRating = gameRatings.get(userID);
 			if(currentUserRating != null) {
 				int compare = currentUserRating.getTimestamp().compareTo(rating.getTimestamp());
 				if(compare > 0) { // The local rating is newer than the "new" one. Don't do anything
 					Log.d(TAG, "\"new\" rating is older than present");
 					return false;
 				} if(compare == 0) { // The local rating is the same of the "new" one. Sum the copies.
+					int newNumCopies = currentUserRating.getNumCopies() + rating.getNumCopies();
 					Log.d(TAG, "added copies in rating");
-					currentUserRating.setNumCopies(currentUserRating.getNumCopies() + rating.getNumCopies());
+					updateNumCopies(currentUserRating, newNumCopies);
+					currentUserRating.setNumCopies(newNumCopies);
 					return true;
 				}
 			}
@@ -156,10 +158,13 @@ public class ApplicationDroidPark extends Application {
 		userRating.put(userID, rating);
 		ratingList.put(gameID, userRating);
 		
-		// TODO
+		// New/more recent msg -> remove from the job list the older one (if present) and insert this new one.
+		// "older" means same gameID and userID but older timestamp
 		if((ratingNumCopies = rating.getNumCopies()) > 0) {
-//			if(jobs.ge)
-//			jobs.add(rating);
+			// If there is an older rating, remove it from the job list
+			if(currentUserRating != null) jobs.remove(currentUserRating);
+			
+			jobs.add(rating);
 		}
 		
 		return true;
@@ -176,15 +181,17 @@ public class ApplicationDroidPark extends Application {
 	 *         0, or because it is more recent or new), false otherwise
 	 */
 	public boolean insertQueue(Integer gameID, QueueMsg queue) {
-		QueueMsg gameQueue = queueList.get(gameID);
-		if(gameQueue != null) {
-			int compare = gameQueue.getTimestamp().compareTo(queue.getTimestamp());
+		QueueMsg currentQueue = queueList.get(gameID);
+		if(currentQueue != null) {
+			int compare = currentQueue.getTimestamp().compareTo(queue.getTimestamp());
 			if(compare > 0) { // The local queue is newer than the "new" one. Don't do anything
 				Log.d(TAG, "\"new\" queue is older than present");
 				return false;
 			} if(compare == 0) { // The local queue is the same of the "new" one. Sum the copies.
+				int newNumCopies = currentQueue.getNumCopies() + queue.getNumCopies();
 				Log.d(TAG, "added copies in queue");
-				gameQueue.setNumCopies(gameQueue.getNumCopies() + queue.getNumCopies());
+				updateNumCopies(currentQueue, newNumCopies);
+				currentQueue.setNumCopies(newNumCopies);
 				return true;
 			}
 		}
@@ -198,9 +205,13 @@ public class ApplicationDroidPark extends Application {
 		// Insert new queue
 		queueList.put(gameID, queue);
 		
-		// TODO
+		// New/more recent msg -> remove from the job list the older one (if present) and insert this new one.
+		// "older" means same gameID but older timestamp
 		if((queueNumCopies = queue.getNumCopies()) > 0) {
+			// If there is an older queue, remove it from the job list
+			if(currentQueue != null) jobs.remove(currentQueue);
 			
+			jobs.add(queue);
 		}
 		
 		return true;
