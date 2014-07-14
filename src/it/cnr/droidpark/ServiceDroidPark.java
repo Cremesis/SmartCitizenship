@@ -500,39 +500,39 @@ public double setProbabilityTrasmission(int n){
 		int k = 0;
 		double p = setProbabilityTrasmission(neighbors.size());
 		if (neighbors.size()!=0){
-		Set<InetAddress> addrOk = new HashSet<InetAddress>();
-		Set<InetAddress> addrLoses = new HashSet<InetAddress>();
+			Set<InetAddress> addrOk = new HashSet<InetAddress>();
+			Set<InetAddress> addrLoses = new HashSet<InetAddress>();
 		
-			for (InetAddress i : neighbors.keySet())
-				if (Math.random()< p){
-					k++;
-					addrOk.add(i);
-				}
-				else addrLoses.add(i);
-			
-			if (msg.getNumCopies()<k){   // TODO Idea alternativa mandare le copie ai primi k destinatari
-				// int d = k-msg.getNumCopies();				
-				for (InetAddress f : addrOk){
+				for (InetAddress i : neighbors.keySet())
+					if (Math.random()< p){
+						k++;
+						addrOk.add(i);
+					}
+					else addrLoses.add(i);
+				
+				if (msg.getNumCopies()<k){   // TODO Idea alternativa mandare le copie ai primi k destinatari
+					int d = msg.getNumCopies();				
+					for (InetAddress f : addrOk){
 					 
-					if (k!=0){												
-						msg.setNumCopies(1);
-						sendMSGToPeer(msg, f);
-						k--;
+						if (d!=0){												
+							msg.setNumCopies(1);
+							sendMSGToPeer(msg, f);
+							d--;
+						}
+						else {
+							msg.setNumCopies(0);
+							sendMSGToPeer(msg, f);
+						}
 					}
-					else {
-						msg.setNumCopies(0);
-						sendMSGToPeer(msg, f);
-					}
-					
+				
 				}
-				msg.setNumCopies(1);
-				sendProbabilisticMulticastMSG(msg, addrOk);
-			}
+				else {				
+					msg.setNumCopies(msg.getNumCopies()/k);  // TODO controllo al crescere di k sulle copie potenzialmente perse
+					sendProbabilisticMulticastMSG(msg, addrOk);
+				}
 			
-			msg.setNumCopies(msg.getNumCopies()/k);  // TODO controllo al crescere di k sulle copie potenzialmente perse
-			sendProbabilisticMulticastMSG(msg, addrOk);
-			msg.setNumCopies(0);
-			sendProbabilisticMulticastMSG(msg, addrLoses); 
+		msg.setNumCopies(0);
+		sendProbabilisticMulticastMSG(msg, addrLoses);
 		}
 	}
 	

@@ -12,6 +12,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Paint.Join;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -271,6 +272,19 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		return msg;
 		}
 	
+	public Message createJobMsg( listJobs, int what, int arg1){
+		Log.d(TAG, "Create app msg");
+		
+		Bundle args = new Bundle();
+		args.putParcelable("msg", listJobs);
+		Message msg = Message.obtain();
+		msg.what = what;
+		msg.arg1 = arg1;
+		msg.setData(args);
+		return msg;
+		}
+	
+	
 	
 	public void sendApplicationMsg(ApplicationMsg appMsg){
 		Log.d(TAG, "Sending app msg");
@@ -361,6 +375,9 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted=0;
 				Message msg = Message.obtain();
+				if (application.getJobs().size()!=0){
+					msg = createJobMsg(application.getJobs(), ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_1);
+				}
 				// if ("sono perfect forwarder")
 				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_1); // serve conoscere il messaggio da inoltrare
 				// else
@@ -404,6 +421,9 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted = 1;
 				Message msg = Message.obtain();
+				if (application.getJobs().size()!=0){
+					msg = createJobMsg(application.getJobs(), ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_2);
+				}
 				// if ("sono perfect forwarder")
 				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_2); // serve conoscere il messaggio da inoltrare
 				// else
@@ -445,6 +465,9 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted = 2;
 				Message msg = Message.obtain();
+				if (application.getJobs().size()!=0){
+					msg = createJobMsg(application.getJobs(), ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_3);
+				}
 				// if ("sono perfect forwarder")
 				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_3); // serve conoscere il messaggio da inoltrareaction.GAME_4); // serve conoscere il messaggio da inoltrare
 				// else
@@ -485,7 +508,9 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				crono1.start();
 				cronoStarted = 3;
 				Message msg = Message.obtain();
-				// if ("sono perfect forwarder")
+				if (application.getJobs().size()!=0){
+					msg = createJobMsg(application.getJobs(), ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_4);
+				}
 				//msg = createApplicationMsg(appMsg, ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_4); // serve conoscere il messaggio da inoltrare
 				// else
 				//msg = createApplicationMsg(appMsg, ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_4);
