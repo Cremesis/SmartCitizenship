@@ -426,7 +426,7 @@ public class ServiceDroidPark extends Service{
 				case ENTER_QUEUE: {
 					Log.d(TAG, "ENTER_QUEUE received");
 					
-					inQueue = false; //@ivan ma qui non dovrebbe essere true ???
+					inQueue = true; //@filippo c'hai ragione
 				}
 				break;
 				

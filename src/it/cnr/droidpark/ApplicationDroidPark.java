@@ -80,6 +80,8 @@ public class ApplicationDroidPark extends Application {
 		}
 		
 		Log.d(TAG, "inserted/updated opinion");
+		
+		// Insert new opinion
 		Map<Integer, Opinion> userOpinion = new Hashtable<Integer, Opinion>();
 		userOpinion.put(userID, opinion);
 		opinionList.put(gameID, userOpinion);
@@ -115,6 +117,12 @@ public class ApplicationDroidPark extends Application {
 		}
 		
 		Log.d(TAG, "inserted/updated rating");
+		
+		// Decrement numCopies by 1
+		int ratingNumCopies = rating.getNumCopies();
+		if(ratingNumCopies > 0) rating.setNumCopies(ratingNumCopies-1);
+		
+		// Insert new rating
 		Map<Integer, RatingMsg> userRating = ratingList.get(gameID);
 		if(userRating == null) userRating = new Hashtable<Integer, RatingMsg>();
 		userRating.put(userID, rating);
@@ -147,6 +155,12 @@ public class ApplicationDroidPark extends Application {
 		}
 		
 		Log.d(TAG, "inserted/updated queue");
+		
+		// Decrement numCopies by 1
+		int queueNumCopies = queue.getNumCopies();
+		if(queueNumCopies > 0) queue.setNumCopies(queueNumCopies-1);
+		
+		// Insert new queue
 		queueList.put(gameID, queue);
 		return true;
 	}
