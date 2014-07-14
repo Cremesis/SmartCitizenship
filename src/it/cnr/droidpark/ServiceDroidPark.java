@@ -420,14 +420,14 @@ public class ServiceDroidPark extends Service{
 					Log.d(TAG, "SEND_OPINION received");
 					
 					Opinion opinion = msg.getData().getParcelable("opinion");
-					application.insertOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
+					application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
 				}
 				break;
 				
 				case ENTER_QUEUE: {
 					Log.d(TAG, "ENTER_QUEUE received");
 					
-					inQueue = true; //@filippo c'hai ragione
+					inQueue = true;
 				}
 				break;
 				
@@ -538,8 +538,8 @@ public double setProbabilityTrasmission(int n){
 	
 	public void sendProbabilisticMulticastMSG(ApplicationMsg msg, Set<InetAddress> adds) {
 		
-		if(adds!=null) { //qui ho cambiato l'utilizzo dell'iteratore
-			for(InetAddress address : adds) {//qui c'è nullpointerexception perché activechats non ha roomid
+		if(adds!=null) {
+			for(InetAddress address : adds) {
 				//mandare solo ai vicini interessati
 				sendMSGToPeer(msg, address);
 			}
@@ -551,8 +551,8 @@ public double setProbabilityTrasmission(int n){
 		public void sendMulticastMSG(ApplicationMsg msg) {
 			Set<InetAddress> adds = neighborsUserContext.keySet();
 
-			if(adds!=null) { //qui ho cambiato l'utilizzo dell'iteratore
-				for(InetAddress address : adds) {//qui c'è nullpointerexception perché activechats non ha roomid
+			if(adds!=null) {
+				for(InetAddress address : adds) {
 					//mandare solo ai vicini interessati
 					sendMSGToPeer(msg, address);
 				}
