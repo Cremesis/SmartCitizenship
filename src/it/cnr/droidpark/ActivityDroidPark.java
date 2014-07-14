@@ -531,7 +531,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		Calendar cal = Calendar.getInstance();
 		lastTimestamp = cal.getTime();
 				
-		application.insertOpinion(lastGameId, localuser, new Opinion(lastGameId,localuser,lastTimestamp, comment));
+		application.insertUpdateOpinion(lastGameId, localuser, new Opinion(lastGameId,localuser,lastTimestamp, comment));
 		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rate, application.NUMBER_OF_COPIES));
 		
 		Toast toast = Toast.makeText(getApplicationContext(), "Hai lasciato un commento", Toast.LENGTH_SHORT);

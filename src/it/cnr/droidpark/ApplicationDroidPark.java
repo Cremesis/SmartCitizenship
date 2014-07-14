@@ -1,6 +1,8 @@
 package it.cnr.droidpark;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -16,14 +18,16 @@ public class ApplicationDroidPark extends Application {
 	public final Integer NUMBER_OF_GAMES = 4;
 	public final Integer NUMBER_OF_COPIES = 50;
 	
-	private Hashtable<Integer, QueueMsg> queueList; // < IDgioco, QueueMsg > 
-	private Hashtable<Integer, Map<Integer, RatingMsg>> ratingList; // < IDgioco, <IDutente,RatingMsg> >
-	private Hashtable<Integer, Map<Integer, Opinion>> opinionList; // < IDgioco, <IDutente,Opinion> >
+	private List<ApplicationMsg> jobs;
+	private Map<Integer, QueueMsg> queueList; // < IDgioco, QueueMsg > 
+	private Map<Integer, Map<Integer, RatingMsg>> ratingList; // < IDgioco, <IDutente,RatingMsg> >
+	private Map<Integer, Map<Integer, Opinion>> opinionList; // < IDgioco, <IDutente,Opinion> >
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		
+		jobs = new ArrayList<ApplicationMsg>();
 		queueList = new Hashtable<Integer, QueueMsg>(NUMBER_OF_GAMES);
 		ratingList = new Hashtable<Integer, Map<Integer, RatingMsg>>(NUMBER_OF_GAMES);
 		opinionList = new Hashtable<Integer, Map<Integer, Opinion>>(NUMBER_OF_GAMES);
@@ -58,6 +62,30 @@ public class ApplicationDroidPark extends Application {
 	    	return opinionList.get(gameID);
 	}
 	
+	public List<ApplicationMsg> getJobs(){
+		return jobs;
+	}
+	
+	/**
+	 * Change the numCopies of an ApplicationMsg. Use this function to update
+	 * correctly the job list, don't do it by yourself! If you want to insert a
+	 * new msg that you have produced or received, use <code>insertRating</code>
+	 * or <code>insertQueue</code>. This function is used only to manage
+	 * previous messages, got from <code>getJobs</code>
+	 * 
+	 * @param msg
+	 * @param newNumCopies
+	 */
+	public void updateNumCopies(ApplicationMsg msg, int newNumCopies) {
+		msg.setNumCopies(newNumCopies);
+		if(newNumCopies <= 0) {
+			// FIXME: remove debug check
+			boolean debug = jobs.remove(msg);
+			Log.d(TAG, "Removed msg");
+			if(!debug) Log.d(TAG, "Tried to remove a msg not in the job list! It's probably an error");
+		}
+	}
+	
 	/**
 	 * Insert the opinion. If there is an opinion of the same user about the
 	 * same game, keep the most recent one only
@@ -65,10 +93,10 @@ public class ApplicationDroidPark extends Application {
 	 * @param gameID
 	 * @param userID
 	 * @param opinion
-	 * @return true if the opinion was inserted (because more recent or new),
+	 * @return true if the opinion was inserted/updated (because more recent or new),
 	 *         false otherwise
 	 */
-	public boolean insertOpinion(Integer gameID, Integer userID, Opinion opinion) {
+	public boolean insertUpdateOpinion(Integer gameID, Integer userID, Opinion opinion) {
 		Map<Integer, Opinion> gameOpinions = opinionList.get(gameID);
 		if(gameOpinions != null) {
 			Opinion currentUserOpinion = gameOpinions.get(userID);
@@ -96,7 +124,7 @@ public class ApplicationDroidPark extends Application {
 	 * @param gameID
 	 * @param userID
 	 * @param rating
-	 * @return true if the rating was inserted (because number of copies are not
+	 * @return true if the rating was inserted/updated (because number of copies are not
 	 *         0, or because it is more recent or new), false otherwise
 	 */
 	public boolean insertRating(Integer gameID, Integer userID, RatingMsg rating) {
@@ -127,6 +155,12 @@ public class ApplicationDroidPark extends Application {
 		if(userRating == null) userRating = new Hashtable<Integer, RatingMsg>();
 		userRating.put(userID, rating);
 		ratingList.put(gameID, userRating);
+		
+		// TODO
+		if((ratingNumCopies = rating.getNumCopies()) > 0) {
+			
+		}
+		
 		return true;
 	}
 	
@@ -137,7 +171,7 @@ public class ApplicationDroidPark extends Application {
 	 * 
 	 * @param gameID
 	 * @param queue
-	 * @return true if the queue was inserted (because number of copies are not
+	 * @return true if the queue was inserted/updated (because number of copies are not
 	 *         0, or because it is more recent or new), false otherwise
 	 */
 	public boolean insertQueue(Integer gameID, QueueMsg queue) {
@@ -162,6 +196,12 @@ public class ApplicationDroidPark extends Application {
 		
 		// Insert new queue
 		queueList.put(gameID, queue);
+		
+		// TODO
+		if((queueNumCopies = queue.getNumCopies()) > 0) {
+			
+		}
+		
 		return true;
 	}
 }
