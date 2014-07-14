@@ -37,6 +37,7 @@ import android.os.Messenger;
 import android.os.Process;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Advanceable;
 import android.widget.Toast;
 import cnr.Common.ApplicationContext;
 import cnr.Common.CallbackInterface;
@@ -499,19 +500,39 @@ public double setProbabilityTrasmission(int n){
 		int k = 0;
 		double p = setProbabilityTrasmission(neighbors.size());
 		if (neighbors.size()!=0){
-		Set<InetAddress> addOk = new HashSet<InetAddress>() {};
+		Set<InetAddress> addrOk = new HashSet<InetAddress>();
+		Set<InetAddress> addrLoses = new HashSet<InetAddress>();
+		
 			for (InetAddress i : neighbors.keySet())
 				if (Math.random()< p){
 					k++;
-					addOk.add(i);
+					addrOk.add(i);
 				}
-			if (msg.getNumCopies()<k){   // Idea alternativa mandare le copie ai primi k destinatari
+				else addrLoses.add(i);
+			
+			if (msg.getNumCopies()<k){   // TODO Idea alternativa mandare le copie ai primi k destinatari
+				// int d = k-msg.getNumCopies();				
+				for (InetAddress f : addrOk){
+					 
+					if (k!=0){												
+						msg.setNumCopies(1);
+						sendMSGToPeer(msg, f);
+						k--;
+					}
+					else {
+						msg.setNumCopies(0);
+						sendMSGToPeer(msg, f);
+					}
+					
+				}
 				msg.setNumCopies(1);
-				sendProbabilisticMulticastMSG(msg, addOk);
+				sendProbabilisticMulticastMSG(msg, addrOk);
 			}
 			
-			msg.setNumCopies(msg.getNumCopies()/k);
-			sendProbabilisticMulticastMSG(msg, addOk);
+			msg.setNumCopies(msg.getNumCopies()/k);  // TODO controllo al crescere di k sulle copie potenzialmente perse
+			sendProbabilisticMulticastMSG(msg, addrOk);
+			msg.setNumCopies(0);
+			sendProbabilisticMulticastMSG(msg, addrLoses); 
 		}
 	}
 	
