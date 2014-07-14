@@ -17,7 +17,9 @@ public class ApplicationDroidPark extends Application {
 	public final Integer NUMBER_OF_GAMES = 4;
 	public final Integer NUMBER_OF_COPIES = 50;
 	
+
 	private Set<ApplicationMsg> jobs;
+
 	private Map<Integer, QueueMsg> queueList; // < IDgioco, QueueMsg > 
 	private Map<Integer, Map<Integer, RatingMsg>> ratingList; // < IDgioco, <IDutente,RatingMsg> >
 	private Map<Integer, Map<Integer, Opinion>> opinionList; // < IDgioco, <IDutente,Opinion> >
