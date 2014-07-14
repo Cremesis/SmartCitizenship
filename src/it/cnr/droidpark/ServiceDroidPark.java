@@ -57,6 +57,7 @@ public class ServiceDroidPark extends Service{
 	public final static int UPDATE_PREF = 103; // User has changed it's preferences about what's interested in
 	public final static int ENTER_QUEUE = 104; // User has entered a queue
 	public final static int SEND_OPINION = 105; // User has generated a new Opinion
+	public final static int SEND_RATING = 106; // User has generated a new Rating
 	
 	// Messages FROM Service TO Activity
 	public final static int USER = 200; // Got local CAMEO user ID
@@ -424,6 +425,19 @@ public class ServiceDroidPark extends Service{
 				}
 				break;
 				
+				case SEND_RATING:{
+					Log.d(TAG, "SEND_RATING received");
+					
+					RatingMsg rate = msg.getData().getParcelable("rating");
+					application.insertRating(rate.getIdGame(), localuser, rate);
+						if (inQueue==false){
+							//Spread and wait
+						}
+						else probAlgorithm(rate);
+						
+				}
+				break;
+				
 				case ENTER_QUEUE: {
 					Log.d(TAG, "ENTER_QUEUE received");
 					
@@ -434,21 +448,29 @@ public class ServiceDroidPark extends Service{
 							
 				case PERFECT_FORWARDER_IN_QUEUE:{  
 					
-					ApplicationMsg appMsg = msg.getData().getParcelable("msg");
 					inQueue = true;
 					
-					if(appMsg instanceof QueueMsg) {
-						if(appMsg.getNumCopies()>1 && (appMsg.getIdGame()!=msg.arg1)) // se le copie riguardano la coda in cui entro le elimino						
-						probAlgorithm(appMsg);
-					}
-
-					if(appMsg instanceof RatingMsg){
-						if(appMsg.getNumCopies()>1){
-							probAlgorithm(appMsg);
-						}
-					}
+						for (ApplicationMsg appMsg: application.getJobs()){
 							
+							
+							if(appMsg instanceof QueueMsg) {
+								if(appMsg.getNumCopies()>1 && (appMsg.getIdGame()!=msg.arg1)) // se le copie riguardano la coda in cui entro le elimino						
+									probAlgorithm(appMsg);
+							}
+
+							if(appMsg instanceof RatingMsg){
+								if(appMsg.getNumCopies()>1){
+									probAlgorithm(appMsg);
+								}
+							}
+						
+						//ApplicationMsg appMsg = msg.getData().getParcelable("msg");
+						
+								
+					}
 				}
+				break;
+					
 				
 				case UPDATE_PREF:{
 					// TODO
@@ -492,7 +514,7 @@ public class ServiceDroidPark extends Service{
 	}
 	
 public double setProbabilityTrasmission(int n){
-		return  Math.exp(1-n);		// probabilit√† esponenziale decrescente con numero di utenti
+		return  1/n;		// probabilit‡ decrescente con numero di utenti
 	}
 	
 	public void probAlgorithm(ApplicationMsg msg){
@@ -534,6 +556,7 @@ public double setProbabilityTrasmission(int n){
 		msg.setNumCopies(0);
 		sendProbabilisticMulticastMSG(msg, addrLoses);
 		}
+		application.updateNumCopies(msg, 0);
 	}
 	
 	public void sendProbabilisticMulticastMSG(ApplicationMsg msg, Set<InetAddress> adds) {

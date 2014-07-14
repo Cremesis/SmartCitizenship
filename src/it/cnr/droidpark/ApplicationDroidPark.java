@@ -1,6 +1,6 @@
 package it.cnr.droidpark;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,9 @@ public class ApplicationDroidPark extends Application {
 	public final Integer NUMBER_OF_GAMES = 4;
 	public final Integer NUMBER_OF_COPIES = 50;
 	
-	private List<ApplicationMsg> jobs;  // MSG con numero copie diverse da zero
+
+	private Set<ApplicationMsg> jobs;
+
 	private Map<Integer, QueueMsg> queueList; // < IDgioco, QueueMsg > 
 	private Map<Integer, Map<Integer, RatingMsg>> ratingList; // < IDgioco, <IDutente,RatingMsg> >
 	private Map<Integer, Map<Integer, Opinion>> opinionList; // < IDgioco, <IDutente,Opinion> >
@@ -27,7 +29,7 @@ public class ApplicationDroidPark extends Application {
 	public void onCreate() {
 		super.onCreate();
 		
-		jobs = new ArrayList<ApplicationMsg>();
+		jobs = new HashSet<ApplicationMsg>();
 		queueList = new Hashtable<Integer, QueueMsg>(NUMBER_OF_GAMES);
 		ratingList = new Hashtable<Integer, Map<Integer, RatingMsg>>(NUMBER_OF_GAMES);
 		opinionList = new Hashtable<Integer, Map<Integer, Opinion>>(NUMBER_OF_GAMES);
@@ -62,7 +64,7 @@ public class ApplicationDroidPark extends Application {
 	    	return opinionList.get(gameID);
 	}
 	
-	public List<ApplicationMsg> getJobs(){
+	public Set<ApplicationMsg> getJobs(){
 		return jobs;
 	}
 	
@@ -158,7 +160,8 @@ public class ApplicationDroidPark extends Application {
 		
 		// TODO
 		if((ratingNumCopies = rating.getNumCopies()) > 0) {
-			
+//			if(jobs.ge)
+//			jobs.add(rating);
 		}
 		
 		return true;
