@@ -500,16 +500,24 @@ public class ServiceDroidPark extends Service{
 	}
 	
 	public void spreadAndWait(ApplicationMsg msg) {
-//		Set<InetAddress> notForwarders = new HashSet<InetAddress>(neighbors.keySet());
-//		notForwarders.removeAll(Arrays.asList(youngestNeighbors));
-//		// TODO
-//		for(InetAddress thisNeighbor : notForwarders) {
-//			
-//		}
-//		
-//		for(InetAddress thisNeighbor : neighbors.keySet()) {
-//			
-//		}
+		Set<InetAddress> notForwarders = new HashSet<InetAddress>(neighbors.keySet());
+		notForwarders.removeAll(Arrays.asList(youngestNeighbors));
+		
+		for(ApplicationMsg appMsg : application.getJobs()) {
+			ApplicationMsg copyToSend = appMsg.duplicate();
+			int numCopiesToSend =(int) Math.floor(((double)copyToSend.getNumCopies() - numberOfNeighbors)/3);
+			for(InetAddress thisNeighbor : youngestNeighbors) {
+				if(thisNeighbor == null) continue;
+				copyToSend.setNumCopies(numCopiesToSend);
+				sendMSGToPeer(copyToSend, thisNeighbor);
+				application.updateNumCopies(appMsg, appMsg.getNumCopies() - numCopiesToSend);
+			}
+			for(InetAddress thisNeighbor : notForwarders) {
+				copyToSend.setNumCopies(0); // FIXME: is "0" correct? Or "1"?
+				sendMSGToPeer(copyToSend, thisNeighbor);
+				application.updateNumCopies(appMsg, appMsg.getNumCopies() - 1);
+			}
+		}
 	}
 	
 	public double setProbabilityTrasmission(int n){
@@ -569,19 +577,6 @@ public class ServiceDroidPark extends Service{
 		}
 	}
 	
-	
-
-		public void sendMulticastMSG(ApplicationMsg msg) {
-			Set<InetAddress> adds = neighbors.keySet();
-
-			if(adds!=null) {
-				for(InetAddress address : adds) {
-					//mandare solo ai vicini interessati
-					sendMSGToPeer(msg, address);
-				}
-			}
-		}
-
 		public void sendMSGToPeer(ApplicationMsg msg, InetAddress dest) {
 			try {
 				boolean result=cameo.sendMessage(writeObject(msg),
