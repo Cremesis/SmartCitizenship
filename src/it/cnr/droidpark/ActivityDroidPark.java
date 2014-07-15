@@ -84,6 +84,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				
 				case ServiceDroidPark.NEW_OPINION_INSERTED:{
 					Log.d(TAG, "NEW_OPINION_INSERTED received");
+					Opinion opinion = msg.getData().getParcelable("opinion");
 					// TODO: decide what to do in this case...
 				}
 				break;
@@ -261,28 +262,30 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		}
 	}*/
 	
-	public Message createApplicationMsg(ApplicationMsg appMsg, int what, int arg1){
+	public Message createApplicationMsg(ApplicationMsg appMsg, int what){
 		Log.d(TAG, "Create app msg");
 		
 		Bundle args = new Bundle();
 		args.putParcelable("msg", appMsg);
 		Message msg = Message.obtain();
 		msg.what = what;
-		msg.arg1 = arg1;
 		msg.setData(args);
 		return msg;
 		}
 	
-	public Message createMsg(int what, int arg1){
-		Log.d(TAG, "Create job msg");
-				
+	public Message createMsg(int what){
 		Message msg = Message.obtain();
 		msg.what = what;
-		msg.arg1 = arg1;
 		return msg;
-		}
+	}
 	
-	
+	private void sendMsg(Message msg) {
+		try {
+			mService.send(msg);
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		}	
+	}
 	
 	public void sendApplicationMsg(ApplicationMsg appMsg, int what){
 		Log.d(TAG, "Sending app msg");
@@ -355,7 +358,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		ratingFrag.show(getSupportFragmentManager(), "RATING");
 	}
 	
- 		
 	public void queueDuration(View v){
 		Chronometer crono1 = (Chronometer) findViewById(R.id.chronometer1);
 		ToggleButton t0 = (ToggleButton) findViewById(R.id.toggleButton0);
@@ -364,176 +366,121 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		ToggleButton t3 = (ToggleButton) findViewById(R.id.toggleButton3);
 		
 		// devo cambiare contesto: tipo algoritmo,coda 
-		
+		Message msg;
 		switch (v.getId()){
-		case R.id.toggleButton0:
-			
-			if (t0.isChecked() && (cronoStarted==-1)){
-				crono1.setBase(SystemClock.elapsedRealtime());
-				crono1.start();
-				cronoStarted=0;
-				Message msg = Message.obtain();
-					
-					if (application.getJobs().size()!=0){
-						msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_1.ordinal());
-					}
-					else msg = createMsg(ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_1.ordinal());
-				try {
-					mService.send(msg);
-				} catch (RemoteException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}				
-					
+			case R.id.toggleButton0:{
 				
-				// devo cambiare contesto: tipo algoritmo,coda 		
+				if (t0.isChecked() && (cronoStarted == -1)) {
+					crono1.setBase(SystemClock.elapsedRealtime());
+					crono1.start();
+					cronoStarted=0;
+					msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE);
+					sendMsg(msg);			
+				} else {
+					if(cronoStarted == 0) {
+						crono1.stop();
+						long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
+						Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
+										
+						Calendar cal = Calendar.getInstance();
+						lastTimestamp = cal.getTime();
+						lastGameId =  ServiceDroidPark.GAME_1;
+						QueueMsg queue = new QueueMsg(lastGameId,lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
+						msg = createApplicationMsg(queue, ServiceDroidPark.SEND_QUEUE);
+						sendMsg(msg);
+										
+						cronoStarted = -1;
+						gameEvaluation();
+										
+						// Chiamare Spread and Wait
+					}
+				}
 			}
-			else {
-				if(cronoStarted==0){
-					crono1.stop();
-					long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
-					Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
+			break;
+			
+			case R.id.toggleButton1:{
+				
+				if (t1.isChecked() && (cronoStarted==-1)) {
+					crono1.setBase(SystemClock.elapsedRealtime());
+					crono1.start();
+					cronoStarted = 1;
+					msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE);
+					sendMsg(msg);
+				} else {
+					if (cronoStarted==1) {
+						crono1.stop();
+						cronoStarted = -1;
+						long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
+						Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
 									
-					Calendar cal = Calendar.getInstance();
-					lastTimestamp = cal.getTime();
-					lastGameId =  Attraction.GAME_1.ordinal();
-					
-					QueueMsg coda = new QueueMsg(Attraction.GAME_1.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES); 
-					application.insertQueue(0, coda);
-									
-					cronoStarted = -1;
-					gameEvaluation();
-									
-					// Chiamare Spread and Wait
+						Calendar cal = Calendar.getInstance();
+						lastTimestamp = cal.getTime();
+						lastGameId =  ServiceDroidPark.GAME_2;
+						QueueMsg queue = new QueueMsg(lastGameId,lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
+						msg = createApplicationMsg(queue, ServiceDroidPark.SEND_QUEUE);
+						sendMsg(msg);
+						
+						gameEvaluation();
 					}
-				
+				}
 			}
-		
-		
-		case R.id.toggleButton1:
-			
-			if (t1.isChecked() && (cronoStarted==-1)){
-				crono1.setBase(SystemClock.elapsedRealtime());
-				crono1.start();
-				cronoStarted = 1;
-				Message msg = Message.obtain();
-					
-					if (application.getJobs().size()!=0){
-						msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_2.ordinal());
+			break;
+				
+			case R.id.toggleButton2:{
+				
+				if (t2.isChecked() && (cronoStarted==-1)) {
+					crono1.setBase(SystemClock.elapsedRealtime());
+					crono1.start();
+					cronoStarted = 2;
+					msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE);
+					sendMsg(msg);
+				} else {
+					if (cronoStarted==2) {
+						crono1.stop();
+						cronoStarted = -1;
+						long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
+						Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
+						
+						Calendar cal = Calendar.getInstance();
+						lastTimestamp = cal.getTime();
+						lastGameId =  ServiceDroidPark.GAME_3;
+						QueueMsg queue = new QueueMsg(lastGameId,lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
+						msg = createApplicationMsg(queue, ServiceDroidPark.SEND_QUEUE);
+						sendMsg(msg);
+						
+						gameEvaluation();
 					}
-					else msg = createMsg(ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_2.ordinal());
-					
-				try {
-					mService.send(msg);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				
-			}
-			else {
-				if (cronoStarted==1)
-				{
-				crono1.stop();
-				cronoStarted = -1;
-				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
-				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-							
-				Calendar cal = Calendar.getInstance();
-				lastTimestamp = cal.getTime();
-				lastGameId =  Attraction.GAME_2.ordinal();
-				QueueMsg coda = new QueueMsg(Attraction.GAME_2.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
-			
-				application.insertQueue(1, coda); 
-				
-				gameEvaluation();
-				
-				// Chiamare Spread and Wait
 				}
 			}
+			break;
 			
-		case R.id.toggleButton2:
-			
-			if (t2.isChecked() && (cronoStarted==-1)){
-				crono1.setBase(SystemClock.elapsedRealtime());
-				crono1.start();
-				cronoStarted = 2;
-				Message msg = Message.obtain();
-					if (application.getJobs().size()!=0){
-						msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_3.ordinal());
+			case R.id.toggleButton3:{
+				
+				if (t3.isChecked() && (cronoStarted==-1)) {
+					crono1.setBase(SystemClock.elapsedRealtime());
+					crono1.start();
+					cronoStarted = 3;
+					msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE);
+					sendMsg(msg);
+				} else {
+					if (cronoStarted==3) {
+						crono1.stop();
+						cronoStarted = -1;
+						long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
+						Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
+						
+						Calendar cal = Calendar.getInstance();
+						lastTimestamp = cal.getTime();
+						lastGameId =  ServiceDroidPark.GAME_4;
+						QueueMsg queue = new QueueMsg(lastGameId,lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
+						msg = createApplicationMsg(queue, ServiceDroidPark.SEND_QUEUE);
+						sendMsg(msg);
+						
+						gameEvaluation();
 					}
-					else msg = createMsg(ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_3.ordinal());
-				try {
-					mService.send(msg);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-			}
-			else {
-				if (cronoStarted==2)
-				{
-				crono1.stop();
-				cronoStarted = -1;
-				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
-				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				
-				Calendar cal = Calendar.getInstance();
-				lastTimestamp = cal.getTime();
-				lastGameId =  Attraction.GAME_3.ordinal();
-				QueueMsg coda = new QueueMsg(Attraction.GAME_3.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
-			
-				application.insertQueue(2, coda);
-				
-				gameEvaluation();
-								
-				// Chiamare Spread and Wait
 				}
 			}
-		
-		case R.id.toggleButton3:
-			
-			if (t3.isChecked() && (cronoStarted==-1)){
-				crono1.setBase(SystemClock.elapsedRealtime());
-				crono1.start();
-				cronoStarted = 3;
-				Message msg = Message.obtain();
-					if (application.getJobs().size()!=0){
-						msg = createMsg(ServiceDroidPark.PERFECT_FORWARDER_IN_QUEUE, Attraction.GAME_4.ordinal());
-					}
-					else msg = createMsg(ServiceDroidPark.ENTER_QUEUE, Attraction.GAME_4.ordinal());
-				try {
-					mService.send(msg);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-			}
-			else {
-				if (cronoStarted==3)
-				{
-				crono1.stop();
-				cronoStarted = -1;
-				long durataCodaInSec = (SystemClock.elapsedRealtime() - crono1.getBase()) / 1000;
-				Integer durataCodaInMinuti = (int) durataCodaInSec / 60;
-				
-				Calendar cal = Calendar.getInstance();
-				lastTimestamp = cal.getTime();
-				lastGameId =  Attraction.GAME_4.ordinal();
-				QueueMsg coda = new QueueMsg(Attraction.GAME_4.ordinal(),lastTimestamp,durataCodaInMinuti,application.NUMBER_OF_COPIES);
-				 
-				
-				application.insertQueue(3, coda); 
-				
-				gameEvaluation();
-				
-				
-				// Chiamare Spread and Wait
-				}
-			}
+			break;
 		}
 	}
 		

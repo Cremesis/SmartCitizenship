@@ -7,16 +7,12 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -29,15 +25,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.Process;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.Advanceable;
 import android.widget.Toast;
 import cnr.Common.ApplicationContext;
 import cnr.Common.CallbackInterface;
@@ -47,15 +39,21 @@ import cnr.Common.UserContext;
 public class ServiceDroidPark extends Service{
 	
 	private static final String TAG = "ServiceDroidPark";
+	
+	// Preferences about attractions
+	public static final int GAME_1 = 1;
+	public static final int GAME_2 = 2;
+	public static final int GAME_3 = 3;
+	public static final int GAME_4 = 4;
 
 	public static final int CAMEO_PORT = 33;
 	
 	// Messages FROM Activity TO Service
 	public final static int ACTIVITY_BIND = 100; // Used to pass the messenger to use to communicate with the Activity
-	public final static int SEND_APP_MSG = 101; // User has generated a new ApplicationMsg
+	//public final static int SEND_APP_MSG = 101; // User has generated a new ApplicationMsg
 	public final static int PERFECT_FORWARDER_IN_QUEUE = 102; // User has multiple Spread and Wait copy to handle in queue
 	public final static int UPDATE_PREF = 103; // User has changed it's preferences about what's interested in
-	public final static int ENTER_QUEUE = 104; // User has entered a queue
+	public final static int SEND_QUEUE = 104; // User has generated a new Queue
 	public final static int SEND_OPINION = 105; // User has generated a new Opinion
 	public final static int SEND_RATING = 106; // User has generated a new Rating
 	
@@ -82,8 +80,8 @@ public class ServiceDroidPark extends Service{
 	
 	private int numberOfNeighbors; // Neighbors that use CAMEO, not this specific application
 	private Hashtable<InetAddress, UserContext> neighborsUserContext;
-	private Hashtable<InetAddress, HashMap<ContextKey, Boolean>> neighbors; // Neighbors ApplicationContext that use this application
-	private Hashtable<InetAddress, Integer> youngestForwarders;
+	private Hashtable<InetAddress, Map<Integer, Boolean>> neighbors; // Neighbors' ApplicationContext that use this application
+	private int youngestAge;
 	
 	ServiceConnection sc = new ServiceConnection(){
 
@@ -106,7 +104,7 @@ public class ServiceDroidPark extends Service{
 		
 		application = (ApplicationDroidPark) getApplication();
 		
-		neighbors = new Hashtable<InetAddress, HashMap<ContextKey,Boolean>>();
+		neighbors = new Hashtable<InetAddress, Map<Integer,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
 		if (!bindService(new Intent("cnr.CAMEO.PLATFORM"), sc, Context.BIND_AUTO_CREATE)){ // bind con il service
@@ -149,38 +147,47 @@ public class ServiceDroidPark extends Service{
 			try {
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
 				
-				// Assumed that the neighbor context is already present locally
-				HashMap<ContextKey, Boolean> currentContext = neighbors.get(thisNeighbor);
+				Map<Integer, Boolean> currentContext = neighbors.get(thisNeighbor);
+				if(currentContext == null) {
+					Map<Integer, Boolean> newRemoteAppContext = new HashMap<Integer, Boolean>();
+					neighbors.put(thisNeighbor, newRemoteAppContext);
+					currentContext = newRemoteAppContext;
+				}
+				Set<Entry<Integer, Boolean>> remoteAppContext = (Set<Entry<Integer, Boolean>>) arg0.entrySet();
 				
-				Set<Entry<ContextKey, Boolean>> updatedSet = (Set<Entry<ContextKey, Boolean>>) arg0.entrySet();
-				for (Entry<ContextKey, Boolean> entry : updatedSet){ // sulle mappe non ci sono gli iterator quindi devo trasformarli in array
+				for (Entry<Integer, Boolean> entry : remoteAppContext){
 					
 					Message msg = Message.obtain();//messaggio vuoto del messenger per poi comunicare con l'activity
 					
 					if(entry.getValue() == null) { // Remove "null" values from the context and add the others
 						currentContext.remove(entry.getKey());
+						continue; // The neighbor removed this preference, go to the next one. 
 					} else {
 						currentContext.put(entry.getKey(), true);
 					}
 					
 					switch(entry.getKey()) {
-						case PREF_1: {
-							// TODO: Send out opinion about the "1" attraction if we have it
+						case GAME_1: {
+							Log.d(TAG, "Found GAME_1 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
+							// TODO: Send out our opinion about the "1" attraction if we have it
 						}
 						break;
 						
-						case PREF_2: {
-							// TODO: Send out opinion about the "2" attraction 
+						case GAME_2: {
+							Log.d(TAG, "Found GAME_2 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
+							// TODO: Send out our opinion about the "2" attraction if we have it
 						}
 						break;
 						
-						case PREF_3: {
-							// TODO: Send out opinion about the "3" attraction 
+						case GAME_3: {
+							Log.d(TAG, "Found GAME_3 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
+							// TODO: Send out our opinion about the "3" attraction if we have it 
 						}
 						break;
 						
-						case PREF_4: {
-							// TODO: Send out opinion about the "4" attraction 
+						case GAME_4: {
+							Log.d(TAG, "Found GAME_4 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
+							// TODO: Send out our opinion about the "4" attraction if we have it
 						}
 						break;
 						
@@ -188,32 +195,26 @@ public class ServiceDroidPark extends Service{
 							Log.e(TAG, "Context not recognized: " + entry.getKey());
 					}
 					
-					/*msg.arg1 = entry.getKey(); //roomID
-					ArrayList<InetAddress> list = activeChats.get(msg.arg1);
-					if(list==null){
-						list=new ArrayList<InetAddress>();
-						activeChats.put(msg.arg1, list);
-					}
-						
-					Log.e("FRANCA", "entry:"+entry.getKey()+" "+entry.getValue());
-					if (entry.getValue() == null){//nodo remoto ha cancellato quella stanza
-						currentContext.remove(entry.getKey()); //rimozione dalla struttura dati locale
-						list.remove(InetAddress.getByAddress(arg1));
-						activeChats.put(msg.arg1, list);
-						msg.what = REMOVED_REMOTE_ROOM; // messaggio per rimuovere la stanza dall'interfaccia grafica
-					}
-					else{
-						currentContext.put(entry.getKey(), entry.getValue());
-						list.add(InetAddress.getByAddress(arg1));
-						activeChats.put(msg.arg1, list);
-						msg.what = CREATED_REMOTE_ROOM;
-						msg.obj = entry.getValue();
-						Log.e("FRANCA", "service send CREATE_REMOTE_ROOM");
-					}
-					mActivity.send(msg);*/
+					// TODO: communicate with the activity
+					//mActivity.send(msg);
 				}
 				
+				numberOfNeighbors = neighbors.size();
+				Log.d(TAG, "Number of neighbors using this app: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
+				Log.e(TAG, Log.getStackTraceString(e));
+			}
+		}
+		
+		private void addNeighbor(UserContext remoteUserContext, byte[] address) {
+			Log.d(TAG, "addNeighbor()");
+			Log.d(TAG, "id: " + remoteUserContext.getName().hashCode() +
+					" | name: " + remoteUserContext.getName() +
+					" | age: " + remoteUserContext.getAge());
+			try {
+				InetAddress thisNeighbor = InetAddress.getByAddress(address);
+				neighborsUserContext.put(thisNeighbor, remoteUserContext);
+			} catch(UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
 		}
@@ -221,70 +222,37 @@ public class ServiceDroidPark extends Service{
 		@Override
 		public void neighborIn(UserContext arg0, byte[] arg1)
 				throws RemoteException {
-			Log.d(TAG, "neighborIn");
-			try {
-				if(arg0.isEmpty()) return; // when it's the first time that a user enters our range and that we see her
-				Log.d(TAG, "id: " + arg0.getName().hashCode() + " - name: " + arg0.getName() + " - age: " + arg0.getAge());
-				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
-				neighborsUserContext.put(thisNeighbor, arg0);
-				
-				// TODO: check and eventually save this neighbor if it is the youngest (keep maximum two)
-
-//				if(remoteContext != null && remoteContext.get(ContextKey.WMH)) {
-//					notInQueue.add(thisNeighbor);
-//				} else {
-//					inQueue.add(thisNeighbor);
-//				}
-				
-				numberOfNeighbors = neighborsUserContext.size();
-				
-				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
-			} catch (UnknownHostException e) {
-				Log.e(TAG, Log.getStackTraceString(e));
-			}
+			Log.d(TAG, "neighborIn()");
+			if(arg0.isEmpty()) return; // when it's the first time that a user enters our range and that we see her
+			addNeighbor(arg0, arg1);
+		}
+		
+		@Override
+		public void neighborUserContextUpdated(UserContext remoteUserContext, byte[] arg1)
+				throws RemoteException {
+			Log.d(TAG, "neighborUserContextUpdated()");
+			addNeighbor(remoteUserContext, arg1);
 		}
 
 		@Override
 		public void neighborOut(byte[] arg0) throws RemoteException {
-			Log.d(TAG, "neighborOut");
+			Log.d(TAG, "neighborOut()");
 			try {
 				InetAddress thisNeighbor = InetAddress.getByAddress(arg0);
 				Log.d(TAG, "name: " + neighborsUserContext.get(thisNeighbor).getName());
 				
-				// TODO: check and eventually delete this neighbor from the youngest,
-				// and then add the third more young (if exists) in its place
-				
 				neighborsUserContext.remove(thisNeighbor);
 				neighbors.remove(thisNeighbor);
 				
-				numberOfNeighbors = neighborsUserContext.size();
-				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
+				numberOfNeighbors = neighbors.size();
+				Log.d(TAG, "Number of neighbors using this app: " + numberOfNeighbors);
 			} catch (UnknownHostException e) {
-				Log.e(TAG, Log.getStackTraceString(e));
-			}
-		}
-
-		@Override
-		public void neighborUserContextUpdated(UserContext remoteUserContext, byte[] arg1)
-				throws RemoteException {
-			Log.d(TAG, "neighborUserContextUpdated");
-			try {
-				InetAddress thisNeighbor = InetAddress.getByAddress(arg1);
-				neighborsUserContext.put(thisNeighbor, remoteUserContext);
-				
-				// TODO: check and eventually save this neighbor if it is the youngest (keep maximum two)
-				
-				numberOfNeighbors = neighborsUserContext.size();
-				Log.d(TAG, "id: " + remoteUserContext.getName().hashCode() + " - name: " + remoteUserContext.getName() + " - age: " + remoteUserContext.getAge());
-				Log.d(TAG, "Number of Neighbors: " + numberOfNeighbors);
-			} catch(UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
 		}
 
 		@Override
 		public void onCommunityChanged(String arg0) throws RemoteException {
-			// TODO Auto-generated method stub
 			// Don't care
 		}
 		
@@ -292,50 +260,55 @@ public class ServiceDroidPark extends Service{
 		@Override
 		public void onMessageReceived(byte[] arg0, byte[] arg1)
 				throws RemoteException {
-			try {
-				InetAddress remoteAddr = InetAddress.getByAddress(arg1);
-				
-				Object msg = (Object) readObject(arg0);
-				if(msg instanceof RatingMsg) {
-					// TODO
-					RatingMsg rating = (RatingMsg) msg;
-					application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
-					if(inQueue) probAlgorithm(rating);
-					else spreadAndWait(rating);
-				} else if(msg instanceof QueueMsg) {
-					// TODO
-					QueueMsg queue = (QueueMsg) msg;
-					application.insertQueue(queue.getIdGame(), queue);
-					if(inQueue) probAlgorithm(queue);
-					else spreadAndWait(queue);
-				} else if(msg instanceof Opinion) {
-					// TODO
-					Opinion opinion = (Opinion) msg;
-					application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
-				}
-					
-				/*ChatMsg chatmsg = (ChatMsg) readObject(arg0);
-				ArrayList<String> messages;
-				synchronized(roomMsg){
-					if(!roomMsg.containsKey((chatmsg.getRoomName()).hashCode())){
-						messages = new ArrayList<String>();
+			boolean inserted;
+			
+			Object msg = (Object) readObject(arg0);
+			
+			if(msg instanceof RatingMsg) {
+				RatingMsg rating = (RatingMsg) msg;
+				inserted = application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
+				if(inserted) {
+					if(rating.getNumCopies() != 0) {
+						if(inQueue)
+							probAlgorithm(rating);
+						else
+							spreadAndWait(rating);
 					}
-					else
-						messages = roomMsg.get((chatmsg.getRoomName()).hashCode());
-				
-					messages.add((String)chatmsg.getContent());
-					roomMsg.put((chatmsg.getRoomName()).hashCode(), messages);
+					Message message = Message.obtain();
+					Bundle data = new Bundle();
+					message.what = NEW_RATING_INSERTED;
+					data.putParcelable("rating", rating);
+					mActivity.send(message);
 				}
-				Message msg = Message.obtain();
-				msg.obj = messages;
-				msg.arg1 = (chatmsg.getRoomName()).hashCode();
-				msg.what = DISPLAY_CHAT_MSGS;
-				mActivity.send(msg);
-				*/
-			} catch(UnknownHostException e) {
-				Log.e(TAG, Log.getStackTraceString(e));
+			} else if(msg instanceof QueueMsg) {
+				QueueMsg queue = (QueueMsg) msg;
+				inserted = application.insertQueue(queue.getIdGame(), queue);
+				if(inserted) {
+					// Start to forward the message only when numCopies != 0
+					if(queue.getNumCopies() != 0) {
+						if(inQueue)
+							probAlgorithm(queue);
+						else
+							spreadAndWait(queue);
+					}
+					Message message = Message.obtain();
+					Bundle data = new Bundle();
+					message.what = NEW_QUEUE_INSERTED;
+					data.putParcelable("queue", queue);
+					mActivity.send(message);
+				}
+			} else if(msg instanceof Opinion) {
+				Opinion opinion = (Opinion) msg;
+				inserted = application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
+				if(inserted) {
+					Message message = Message.obtain();
+					Bundle data = new Bundle();
+					message.what = NEW_OPINION_INSERTED;
+					data.putParcelable("opinion", opinion);
+					mActivity.send(message);
+				}
 			}
-		} 
+		}
 	};
 
 	private void registerApp(){
@@ -360,10 +333,8 @@ public class ServiceDroidPark extends Service{
 			appContext = new ApplicationContext();
 			
 			// FIXME: temporary context
-			appContext.addValue(ContextKey.PREF_1.ordinal(), true);
+			appContext.addValue(GAME_1, true);
 			appContext.update(cameo, CAMEOAppKey);
-			
-			Log.d(TAG, "appContext updated");
 			
 			localuser = cameo.getLocalUserContext(CAMEOAppKey).getName().hashCode();
 			if(mActivity!=null){
@@ -400,23 +371,23 @@ public class ServiceDroidPark extends Service{
 				}
 				break;
 				
-				case SEND_APP_MSG:{ // ApplicationMsg generated by the user.
-					Log.d(TAG, "SEND_APP_MSG received");
-					ApplicationMsg appMsg = msg.getData().getParcelable("msg");
-					
-					if(appMsg instanceof QueueMsg) // it means that I have exited the queue
-						inQueue = false;
-					
-					// TODO
-					// sendMulticastMSG(queue); ?
-					// application.insert...(...); ?
-				}
-				break;
+//				case SEND_APP_MSG:{ // ApplicationMsg generated by the user.
+//					Log.d(TAG, "SEND_APP_MSG received");
+//					ApplicationMsg appMsg = msg.getData().getParcelable("msg");
+//					
+//					if(appMsg instanceof QueueMsg) // it means that I have exited the queue
+//						inQueue = false;
+//					
+//					// TODO
+//					// sendMulticastMSG(queue); ?
+//					// application.insert...(...); ?
+//				}
+//				break;
 				
 				case SEND_OPINION:{
 					Log.d(TAG, "SEND_OPINION received");
 					
-					Opinion opinion = msg.getData().getParcelable("opinion");
+					Opinion opinion = msg.getData().getParcelable("msg");
 					application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
 				}
 				break;
@@ -424,63 +395,43 @@ public class ServiceDroidPark extends Service{
 				case SEND_RATING:{
 					Log.d(TAG, "SEND_RATING received");
 					
-					RatingMsg rate = msg.getData().getParcelable("rating");
+					RatingMsg rate = msg.getData().getParcelable("msg");
 					application.insertRating(rate.getIdGame(), localuser, rate);
-						if (inQueue==false){
-							//Spread and wait
-						}
-						else probAlgorithm(rate);
-						
+					if (inQueue == false)
+						spreadAndWait(rate);
+					else
+						probAlgorithm(rate);
 				}
 				break;
 				
-				case ENTER_QUEUE: {
-					Log.d(TAG, "ENTER_QUEUE received");
+				case SEND_QUEUE: {
+					Log.d(TAG, "SEND_QUEUE received");
 					
-					inQueue = true;
+					QueueMsg queue = msg.getData().getParcelable("msg");
+					application.insertQueue(queue.getIdGame(), queue);
+					if (inQueue == false)
+						spreadAndWait(queue);
+					else
+						probAlgorithm(queue);
 				}
 				break;
 				
-							
 				case PERFECT_FORWARDER_IN_QUEUE:{  
 					
 					inQueue = true;
-					
-						for (ApplicationMsg appMsg: application.getJobs()){
-							
-							
-							if(appMsg instanceof QueueMsg) {
-								if(appMsg.getNumCopies()>1 && (appMsg.getIdGame()!=msg.arg1)) // se le copie riguardano la coda in cui entro le elimino						
-									probAlgorithm(appMsg);
-							}
-
-							if(appMsg instanceof RatingMsg){
-								if(appMsg.getNumCopies()>1){
-									probAlgorithm(appMsg);
-								}
-							}
-						
-						//ApplicationMsg appMsg = msg.getData().getParcelable("msg");
-						
-								
-					}
+				
+					for (ApplicationMsg appMsg : application.getJobs())
+						if(appMsg.getNumCopies()>0)						
+							probAlgorithm(appMsg);
 				}
 				break;
 					
 				
 				case UPDATE_PREF:{
-					// TODO
-					/*
-					String roomName = msg.obj.toString();
-					appContext.addValue(roomName.hashCode(), roomName);
-					try {
-						appContext.update(cameo, CAMEOAppKey);
-					} catch (RemoteException e) {
-						Log.e(TAG, Log.getStackTraceString(e));
-					}
-					*/
+					// TODO: update the localuser preferences
 				}
 				break;
+				
 				/*
 				case ROOM_MSG:{
 					Bundle b = msg.getData();
@@ -503,39 +454,59 @@ public class ServiceDroidPark extends Service{
 				}
 				break;
 				*/
+				
 				default:
 					super.handleMessage(msg);
 				}
 		}
 	}
 	
-	public void computeYoungestForwarders() {
-		// FIXME: not checked that much
+	public boolean useThisApplication(InetAddress neighbor) {
+		return neighbors.containsKey(neighbor);
+	}
+	
+	/**
+	 * Returns the two youngest neighbors
+	 * 
+	 * @return an array of dimension 2, where each element is the address of the
+	 *         youngest among the neighbors. It may contains null values
+	 */
+	public InetAddress[] computeYoungestForwarders() {
 		int min1 = Integer.MAX_VALUE, min2 = Integer.MAX_VALUE, currentAge; // min1 <= min2
+		InetAddress[] youngest = new InetAddress[2];
 		for(InetAddress neighbor : neighbors.keySet()) {
+			if(!useThisApplication(neighbor)) // Consider only those neighbors that use this application
+				continue;
 			currentAge = neighborsUserContext.get(neighbor).getAge();
-			if(currentAge < min1) {
-				min1 = currentAge;
+			if(currentAge <= min1) { // the "=" part is needed to get the youngest ones, even if they have the same age
 				min2 = min1;
+				min1 = currentAge;
+				
+				youngest[1] = youngest[0];
+				youngest[0] = neighbor;
 			} else if(currentAge > min1 && currentAge < min2) {
 				min2 = currentAge;
+				
+				youngest[1] = neighbor;
 			}
 		}
+		return youngest;
 	}
 	
 	public void spreadAndWait(ApplicationMsg msg) {
 		// TODO
 	}
 	
-public double setProbabilityTrasmission(int n){
-		return  1/n;		// probabilità decrescente con numero di utenti
+	public double setProbabilityTrasmission(int n){
+		if(n != 0) return  1d/n;		// probabilitÃ  decrescente con numero di utenti
+		else return 0;
 	}
 	
 	public void probAlgorithm(ApplicationMsg msg){
 
 		int k = 0;
-		double p = setProbabilityTrasmission(neighbors.size());
 		if (neighbors.size()!=0){
+			double p = setProbabilityTrasmission(neighbors.size());
 			Set<InetAddress> addrOk = new HashSet<InetAddress>();
 			Set<InetAddress> addrLoses = new HashSet<InetAddress>();
 		
@@ -586,7 +557,7 @@ public double setProbabilityTrasmission(int n){
 	
 
 		public void sendMulticastMSG(ApplicationMsg msg) {
-			Set<InetAddress> adds = neighborsUserContext.keySet();
+			Set<InetAddress> adds = neighbors.keySet();
 
 			if(adds!=null) {
 				for(InetAddress address : adds) {
