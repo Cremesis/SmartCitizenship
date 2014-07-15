@@ -3,19 +3,19 @@ package it.cnr.droidpark;
 import it.cnr.droidpark.PopUpOptionDialog.PopUpDialogListener;
 import it.cnr.droidpark.RatingFragmentDialog.NoticeDialogListener;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
+
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Paint.Join;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -95,21 +95,21 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				
 				case ServiceDroidPark.NEW_QUEUE_INSERTED:{
 					Log.d(TAG, "NEW_QUEUE_INSERTED received");
-					QueueMsg queue = msg.getData().getParcelable("queue");
+					//QueueMsg queue = msg.getData().getParcelable("queue");
 					// TODO: show new time queue.getDuration() for game queue.getIdGame()
 				}
 				break;
 				
 				case ServiceDroidPark.NEW_RATING_INSERTED:{
 					Log.d(TAG, "NEW_RATING_INSERTED received");
-					RatingMsg rating = msg.getData().getParcelable("rating");
+					//RatingMsg rating = msg.getData().getParcelable("rating");
 					// TODO: show new average rating application.getRatingAverage(rating.getIdGame()) for game rating.getIdGame()
 				}
 				break;
 				
 				case ServiceDroidPark.NEW_OPINION_INSERTED:{
 					Log.d(TAG, "NEW_OPINION_INSERTED received");
-					Opinion opinion = msg.getData().getParcelable("opinion");
+					//Opinion opinion = msg.getData().getParcelable("opinion");
 					// TODO: decide what to do in this case...
 				}
 				break;
@@ -118,31 +118,6 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 					finish();
 				break;
 				
-				/*case EntertainmentService.CREATED_REMOTE_ROOM: {
-					if (chatList.put(msg.arg1, (String) msg.obj) == null){
-						Log.e("FRANCA", "activity CREATE_REMOTE_ROOM");
-						chatListFragment.addRoom(msg.arg1);
-					}
-				}
-				break;
-				
-				case EntertainmentService.REMOVED_REMOTE_ROOM: {
-					chatList.remove(msg.arg1);
-					chatListFragment.removeRoom(msg.arg1);
-				}
-				break;
-				
-				case EntertainmentService.DISPLAY_CHAT_MSGS:{
-					synchronized(roomMsgs){
-						roomMsgs.put(msg.arg1, (ArrayList<String>) msg.obj);
-						Integer roomID = msg.arg1;
-						if((roomFrag!=null) && ((roomFrag.getRoomID().hashCode())==roomID)){
-							roomFrag.publishMsg(roomFrag.getRoomID(), (ArrayList<String>) msg.obj);
-						}
-					}
-				}
-				break;*/
-					
 				default:
 					super.handleMessage(msg);
 				}
@@ -240,56 +215,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		return super.onOptionsItemSelected(item);
 	}
 	
-		
-		/* void showRoom(String roomName) {
-			if(roomFrag==null){
-//				RoomFragment newFragment =  RoomFragment.newInstance(roomName);
-				RoomFragment newFragment =  new RoomFragment();
-				roomFrag = newFragment;
-			}
-			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-			// Replace whatever is in the fragment_container view with this fragment,
-			// and add the transaction to the back stack
-			transaction.replace(R.id.fragment_container, roomFrag);
-			transaction.addToBackStack(null);
-
-			// Commit the transaction
-			transaction.commit();
-			
-			//roomFrag.setRoomID(roomName);
-			roomFrag.publishMsg(roomName, roomMsgs.get(roomName.hashCode())); 
-		}*/
-		
-	
-	/*public void publishRoomMsg(String content, String room){
-		//visualizzare il msg sulla lista
-		synchronized(roomMsgs){
-			ArrayList<String> messages = roomMsgs.get(room.hashCode());
-			if(messages==null) {
-				messages=new ArrayList<String>();
-				roomMsgs.put(room.hashCode(), messages);
-			}
-			messages.add(content); L
-		}
-		
-		Bundle args = new Bundle();
-		args.putString("room", room);
-		args.putString("content",content);
-		Message msg = Message.obtain();
-		msg.what = EntertainmentService.SENT_QUEUE_MSG;
-		msg.setData(args);
-		
-		try {
-			mService.send(msg);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}*/
-	
-	
-	
 	public void activateLongClick(){
 		
 		
@@ -309,6 +235,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		
 	}
 	
+
 	public Message createApplicationMsg(ApplicationMsg appMsg, int what){
 		Log.d(TAG, "Create app msg");
 		
@@ -374,14 +301,9 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				IBinder service) {
 			// We've bound to LocalService, cast the IBinder and get LocalService instance
 			mService = new Messenger(service);
-			Message msg = Message.obtain();
-			msg.what = ServiceDroidPark.ACTIVITY_BIND;
+			Message msg = createMsg(ServiceDroidPark.ACTIVITY_BIND);
 			msg.replyTo = incomingMessenger;
-			try {
-				mService.send(msg);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
+			sendMsg(msg);
 			mBound = true;
 		}
 
@@ -391,31 +313,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		}
 	};
 
-	/*@Override
-	public Map<Integer, String> getChatList() {
-		// TODO Auto-generated method stub
-		return chatList;
-	}
 
-	@Override
-	public Set<Integer> getFollowedRooms(){
-		return followedRooms;
-	}
-
-	@Override
-	public void followRoom(Integer roomKey, String roomName){
-		Message msg = Message.obtain();
-		msg.what = EntertainmentService.FOLLOW_REMOTE_ROOM;
-		msg.arg1 = roomKey;
-		msg.obj = roomName;
-		try {
-			mService.send(msg);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}*/
-	
 	@Override
 	public void gameEvaluation(){
 		RatingFragmentDialog ratingFrag = new RatingFragmentDialog();

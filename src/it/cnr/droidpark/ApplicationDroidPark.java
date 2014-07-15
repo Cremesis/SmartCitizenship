@@ -64,7 +64,7 @@ public class ApplicationDroidPark extends Application {
 	}
 	
 	public Set<ApplicationMsg> getJobs(){
-		return jobs;
+		return new HashSet<ApplicationMsg>(jobs);
 	}
 	
 	/**
