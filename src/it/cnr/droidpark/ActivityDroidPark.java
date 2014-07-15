@@ -1,10 +1,12 @@
 package it.cnr.droidpark;
 
+import it.cnr.droidpark.PopUpOptionDialog.PopUpDialogListener;
 import it.cnr.droidpark.RatingFragmentDialog.NoticeDialogListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -27,19 +29,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnLongClickListener;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-public class ActivityDroidPark extends FragmentActivity implements NoticeDialogListener{
+
+
+
+public class ActivityDroidPark extends FragmentActivity implements NoticeDialogListener, PopUpDialogListener {
 
 	private static final String TAG = "ActivityDroidPark";
 	
 	private ApplicationDroidPark application;
 	private static Date lastTimestamp;
 	private static int lastGameId;
+	private static int lastPressedGameButton;
 	
 	int cronoStarted = -1;
 	
@@ -49,6 +57,23 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	int localuser;
 
 	final Messenger incomingMessenger = new Messenger(new IncomingHandler());
+	
+	private class ToggleLongListener implements OnLongClickListener{
+
+		@Override
+		public boolean onLongClick(View v) {
+			switch(v.getId()){
+			case R.id.toggleButton0: lastPressedGameButton = ServiceDroidPark.GAME_1;
+			case R.id.toggleButton1: lastPressedGameButton = ServiceDroidPark.GAME_2;
+			case R.id.toggleButton2: lastPressedGameButton = ServiceDroidPark.GAME_3;
+			case R.id.toggleButton3: lastPressedGameButton = ServiceDroidPark.GAME_4;
+			}
+			PopUpOptionDialog pop = new PopUpOptionDialog();
+			pop.show(getSupportFragmentManager(), "Pop");
+			return true;
+		}
+		
+	}
 
 	// ChatListFragment chatListFragment;
 	// RoomFragment roomFrag;
@@ -129,7 +154,8 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		setContentView(R.layout.fragment_main);
 		
 		application = (ApplicationDroidPark) getApplication();
-		
+		activateLongClick();
+				
 		Intent intent = new Intent(this, ServiceDroidPark.class);
 		if (!mBound){
 			bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -244,7 +270,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				messages=new ArrayList<String>();
 				roomMsgs.put(room.hashCode(), messages);
 			}
-			messages.add(content); 
+			messages.add(content); L
 		}
 		
 		Bundle args = new Bundle();
@@ -261,6 +287,27 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 			e.printStackTrace();
 		}
 	}*/
+	
+	
+	
+	public void activateLongClick(){
+		
+		
+		ToggleButton t0 = (ToggleButton) findViewById(R.id.toggleButton0);
+		ToggleButton t1 = (ToggleButton) findViewById(R.id.toggleButton1);
+		ToggleButton t2 = (ToggleButton) findViewById(R.id.toggleButton2);
+		ToggleButton t3 = (ToggleButton) findViewById(R.id.toggleButton3);
+		
+		ToggleLongListener tlistener = new ToggleLongListener();
+		
+		t0.setOnLongClickListener(tlistener);
+		t1.setOnLongClickListener(tlistener);
+		t2.setOnLongClickListener(tlistener);
+		t3.setOnLongClickListener(tlistener);
+		
+		
+		
+	}
 	
 	public Message createApplicationMsg(ApplicationMsg appMsg, int what){
 		Log.d(TAG, "Create app msg");
@@ -285,6 +332,22 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		} catch (RemoteException e1) {
 			e1.printStackTrace();
 		}	
+	}
+	
+	public void sendOpinionMsg(Opinion op, int what){
+		Log.d(TAG, "Sending app msg");
+		
+		Bundle args = new Bundle();
+		args.putParcelable("msg", op);
+		Message msg = Message.obtain();
+		msg.what = what;
+		msg.setData(args);
+		
+		try {
+			mService.send(msg);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void sendApplicationMsg(ApplicationMsg appMsg, int what){
@@ -353,6 +416,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		}
 	}*/
 	
+	@Override
 	public void gameEvaluation(){
 		RatingFragmentDialog ratingFrag = new RatingFragmentDialog();
 		ratingFrag.show(getSupportFragmentManager(), "RATING");
@@ -364,10 +428,12 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		ToggleButton t1 = (ToggleButton) findViewById(R.id.toggleButton1);
 		ToggleButton t2 = (ToggleButton) findViewById(R.id.toggleButton2);
 		ToggleButton t3 = (ToggleButton) findViewById(R.id.toggleButton3);
+			
 		
-		// devo cambiare contesto: tipo algoritmo,coda 
 		Message msg;
-		switch (v.getId()){
+		
+		
+			switch (v.getId()){
 			case R.id.toggleButton0:{
 				
 				if (t0.isChecked() && (cronoStarted == -1)) {
@@ -487,14 +553,20 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	@Override
 	public void onDialogPositiveClick(DialogFragment dialog) {
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);
-		float rate = rb.getRating();
+		//float rate = rb.getRating();
 		EditText et = (EditText) dialog.getDialog().findViewById(R.id.editText1);
 		String comment = et.getText().toString();
 		Calendar cal = Calendar.getInstance();
-		lastTimestamp = cal.getTime();
-				
-		application.insertUpdateOpinion(lastGameId, localuser, new Opinion(lastGameId,localuser,lastTimestamp, comment));
-		application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rate, application.NUMBER_OF_COPIES));
+		//lastTimestamp = cal.getTime();
+		
+		RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+		sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
+		
+		Opinion opinion = new Opinion(lastGameId, localuser, cal.getTime(), comment);
+		sendOpinionMsg(opinion, ServiceDroidPark.SEND_OPINION);
+		
+		//application.insertUpdateOpinion(lastGameId, localuser, new Opinion(lastGameId,localuser,lastTimestamp, comment));
+		//application.insertRating(lastGameId, localuser, new RatingMsg(lastGameId, localuser, lastTimestamp, rate, application.NUMBER_OF_COPIES));
 		
 		Toast toast = Toast.makeText(getApplicationContext(), "Hai lasciato un commento", Toast.LENGTH_SHORT);
 		toast.show();
@@ -504,10 +576,10 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	@Override
 	public void onDialogNegativeClick(DialogFragment dialog) {
 		Calendar cal = Calendar.getInstance();
-		lastTimestamp = cal.getTime();
+		//lastTimestamp = cal.getTime();
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);	
 		
-		RatingMsg rMsg = new RatingMsg(lastGameId, localuser, lastTimestamp, rb.getRating(), application.NUMBER_OF_COPIES);
+		RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
 		sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
 		
 		/*try {
@@ -528,6 +600,15 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	public void onDialogNeutralClick(DialogFragment dialog) {
 		dialog.dismiss();
 	}
-	
+
+	@Override
+	public void preferedGameUpdate() {
+		Message msg = Message.obtain();
+		msg.what = ServiceDroidPark.UPDATE_PREF;
+		msg.arg1 = lastPressedGameButton;
+		// TODO Auto-generated method stub
+		
+	}
+
 	
 }

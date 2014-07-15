@@ -24,7 +24,8 @@
             android:layout_weight="1.0"
             android:onClick="queueDuration"
             android:textOff="@string/game_1"
-            android:textOn="@string/game_1" />
+            android:textOn="@string/game_1"
+            android:longClickable="true" />
 
         <ToggleButton
             android:id="@+id/toggleButton1"
@@ -34,7 +35,8 @@
             android:layout_weight="1.0"
             android:onClick="queueDuration"
             android:textOff="@string/game_2"
-            android:textOn="@string/game_2" />
+            android:textOn="@string/game_2"
+            android:longClickable="true" />
     </LinearLayout>
 
     <LinearLayout
@@ -51,7 +53,8 @@
             android:layout_weight="1.0"
             android:onClick="queueDuration"
             android:textOff="@string/game_3"
-            android:textOn="@string/game_3" />
+            android:textOn="@string/game_3"
+            android:longClickable="true" />
 
         <ToggleButton
             android:id="@+id/toggleButton3"
@@ -61,7 +64,8 @@
             android:layout_weight="1.0"
             android:onClick="queueDuration"
             android:textOff="@string/game_4"
-            android:textOn="@string/game_4" />
+            android:textOn="@string/game_4"
+            android:longClickable="true" />
     </LinearLayout>
 
     <Chronometer

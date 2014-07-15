@@ -8,5 +8,12 @@
     <string name="game_2">Gioco 2</string>
     <string name="game_3">Gioco 3</string>
     <string name="game_4">Gioco 4</string>
+    
+    <string-array name="OptionGameList"> 
+        <item name="leggi comment">Leggi i commenti</item>
+        <item name="preferiti">Imposta o rimuovi dai preferiti</item>
+        <item name="voto commento">Lascia un voto e/o un commento</item>
+        
+    </string-array>
 
 </resources>
