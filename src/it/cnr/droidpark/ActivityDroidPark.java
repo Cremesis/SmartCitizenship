@@ -63,10 +63,10 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		@Override
 		public boolean onLongClick(View v) {
 			switch(v.getId()){
-			case R.id.toggleButton0: lastPressedGameButton = ServiceDroidPark.GAME_1;
-			case R.id.toggleButton1: lastPressedGameButton = ServiceDroidPark.GAME_2;
-			case R.id.toggleButton2: lastPressedGameButton = ServiceDroidPark.GAME_3;
-			case R.id.toggleButton3: lastPressedGameButton = ServiceDroidPark.GAME_4;
+			case R.id.toggleButton0: lastPressedGameButton = ServiceDroidPark.GAME_1;break;
+			case R.id.toggleButton1: lastPressedGameButton = ServiceDroidPark.GAME_2;break;
+			case R.id.toggleButton2: lastPressedGameButton = ServiceDroidPark.GAME_3;break;
+			case R.id.toggleButton3: lastPressedGameButton = ServiceDroidPark.GAME_4;break;
 			}
 			PopUpOptionDialog pop = new PopUpOptionDialog();
 			pop.show(getSupportFragmentManager(), "Pop");
@@ -479,19 +479,10 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		
 		RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
 		sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
-		
-		/*try {
-			mService.send(msg);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		
-		
+						
 		Toast toast = Toast.makeText(getApplicationContext(), "Valutazione salvata", Toast.LENGTH_SHORT);
 		toast.show();
-		
-		
+				
 	}
 
 	@Override
@@ -504,8 +495,8 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		Message msg = Message.obtain();
 		msg.what = ServiceDroidPark.UPDATE_PREF;
 		msg.arg1 = lastPressedGameButton;
-		// TODO Auto-generated method stub
-		
+		sendMsg(msg);
+				
 	}
 
 	

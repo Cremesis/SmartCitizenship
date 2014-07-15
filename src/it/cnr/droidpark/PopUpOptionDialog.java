@@ -49,9 +49,9 @@ public class PopUpOptionDialog extends DialogFragment{
 					
 					
 					switch (which){
-					case 0 : 
-					case 1 :
-					case 2 :mListener.gameEvaluation();
+					case 0 : break;
+					case 1 : {mListener.preferedGameUpdate();break;}
+					case 2 : {mListener.gameEvaluation(); break;}
 					}
 					
 				}

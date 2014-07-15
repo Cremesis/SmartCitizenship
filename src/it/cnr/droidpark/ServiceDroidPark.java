@@ -81,7 +81,7 @@ public class ServiceDroidPark extends Service{
 	private int numberOfNeighbors; // Neighbors that use CAMEO, not this specific application
 	private Hashtable<InetAddress, UserContext> neighborsUserContext;
 	private Hashtable<InetAddress, Map<Integer, Boolean>> neighbors; // Neighbors' ApplicationContext that use this application
-	private InetAddress[] youngestNeighbors;
+	private InetAddress[] youngestNeighbors = new InetAddress[2];
 	
 	ServiceConnection sc = new ServiceConnection(){
 
@@ -106,6 +106,7 @@ public class ServiceDroidPark extends Service{
 		
 		neighbors = new Hashtable<InetAddress, Map<Integer,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
+
 
 		if (!bindService(new Intent("cnr.CAMEO.PLATFORM"), sc, Context.BIND_AUTO_CREATE)){ // bind con il service
 			Toast.makeText(this, "Can't connect to CAMEO", Toast.LENGTH_SHORT).show();
@@ -432,6 +433,7 @@ public class ServiceDroidPark extends Service{
 				
 				case UPDATE_PREF:{
 					try {
+						Log.d(TAG,"PREFERENCE UPDATE "+ msg.arg1);
 						if(appContext.getValue(msg.arg1) != null) {
 							appContext.removeValue(msg.arg1);
 						} else {
