@@ -12,4 +12,5 @@ public interface ApplicationMsg extends Parcelable, Serializable {
 	public void setTimestamp(Date timestamp);
 	public int getNumCopies();
 	public void setNumCopies(int numCopies);
+	public ApplicationMsg duplicate();
 }

@@ -23,7 +23,7 @@ public class RatingMsg implements ApplicationMsg {
 		super();
 		this.idGame = idGame;
 		this.idUser = idUser;
-		this.timestamp = timestamp;
+		this.timestamp = new Date(timestamp.getTime());
 		this.eval = eval;
 		this.numCopies = numCopies;
 	}
@@ -68,6 +68,12 @@ public class RatingMsg implements ApplicationMsg {
 	@Override
 	public int describeContents() {
 		return 0;
+	}
+	
+	@Override
+	public ApplicationMsg duplicate() {
+		RatingMsg copy = new RatingMsg(idGame, idUser, timestamp, eval, numCopies);
+		return copy;
 	}
 	
 	public int getIdGame() {

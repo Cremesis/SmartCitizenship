@@ -21,7 +21,7 @@ public class QueueMsg implements ApplicationMsg {
 	public QueueMsg(int idGame, Date timestamp, int duration, int numCopies) {
 		super();
 		this.idGame = idGame;
-		this.timestamp = timestamp;
+		this.timestamp = new Date(timestamp.getTime());
 		this.duration = duration;
 		this.numCopies = numCopies;
 	}
@@ -64,6 +64,12 @@ public class QueueMsg implements ApplicationMsg {
 	@Override
 	public int describeContents() {
 		return 0;
+	}
+	
+	@Override
+	public ApplicationMsg duplicate() {
+		QueueMsg copy = new QueueMsg(idGame, timestamp, duration, numCopies);
+		return copy;
 	}
 	
 	@Override
