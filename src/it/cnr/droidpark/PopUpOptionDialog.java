@@ -9,6 +9,7 @@ import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.widget.ToggleButton;
@@ -49,7 +50,12 @@ public class PopUpOptionDialog extends DialogFragment{
 					
 					
 					switch (which){
-					case 0 : break;
+					case 0 : {
+						Intent i = new Intent(getActivity(), SimpleListViewActivity.class);
+						startActivity(i);
+						break;
+					
+					}
 					case 1 : {mListener.preferedGameUpdate();break;}
 					case 2 : {mListener.gameEvaluation(); break;}
 					}

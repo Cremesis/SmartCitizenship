@@ -436,10 +436,15 @@ public class ServiceDroidPark extends Service{
 						Log.d(TAG,"PREFERENCE UPDATE "+ msg.arg1);
 						if(appContext.getValue(msg.arg1) != null) {
 							appContext.removeValue(msg.arg1);
+							Toast toast = Toast.makeText(getApplicationContext(), "Preferenza rimossa", Toast.LENGTH_SHORT);
+							toast.show();
 						} else {
 							appContext.addValue(msg.arg1, true);
+							Toast toast = Toast.makeText(getApplicationContext(), "Preferenza aggiunta", Toast.LENGTH_SHORT);
+							toast.show();
 						}
-						appContext.update(cameo, CAMEOAppKey);
+						appContext.update(cameo, CAMEOAppKey);						
+						
 					} catch(RemoteException e) {
 						e.printStackTrace();
 					}
