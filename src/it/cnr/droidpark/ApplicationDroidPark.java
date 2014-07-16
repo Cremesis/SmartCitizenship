@@ -1,5 +1,6 @@
 package it.cnr.droidpark;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
@@ -32,6 +33,11 @@ public class ApplicationDroidPark extends Application {
 		queueList = new Hashtable<Integer, QueueMsg>(NUMBER_OF_GAMES);
 		ratingList = new Hashtable<Integer, Map<Integer, RatingMsg>>(NUMBER_OF_GAMES);
 		opinionList = new Hashtable<Integer, Map<Integer, Opinion>>(NUMBER_OF_GAMES);
+		
+		Map<Integer, Opinion> demoMap = new Hashtable<Integer, Opinion>();
+		demoMap.put(466546, new Opinion(1, 466546, Calendar.getInstance().getTime(), "Questa è un'opinione"));
+		demoMap.put(87678, new Opinion(1, 87678, Calendar.getInstance().getTime(), "Questa è un'altra opinione"));
+		opinionList.put(1, demoMap);
 	}
 	
 	public float getRatingAverage(Integer gameID) {
