@@ -222,9 +222,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		t1.setOnLongClickListener(tlistener);
 		t2.setOnLongClickListener(tlistener);
 		t3.setOnLongClickListener(tlistener);
-		
-		
-		
+						
 	}
 	
 

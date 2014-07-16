@@ -35,7 +35,7 @@ public class SimpleListViewActivity extends Activity {
 	    
 	    Collection<Opinion> collection = application.getAllGameOpinions(ActivityDroidPark.lastPressedGameButton).values();
 	    
-	    if(collection!=null){
+	    if(collection.size()!=0){
 	    	Collection<Opinion> opinions = (Collection<Opinion>) application.getAllGameOpinions(ActivityDroidPark.lastPressedGameButton).values();
 	    		for (Opinion i : opinions){
 	    				comments.add(i.getMsg());
