@@ -334,7 +334,7 @@ public class ServiceDroidPark extends Service{
 			if(mActivity!=null){
 				Message msg = Message.obtain();
 				msg.what = USER;
-				msg.obj = localuser;
+				msg.arg1 = localuser;
 				try {
 					mActivity.send(msg);
 				} catch (RemoteException e) {

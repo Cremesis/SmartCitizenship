@@ -80,7 +80,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 				case ServiceDroidPark.USER:{
-					localuser = (Integer) msg.obj;
+					localuser = msg.arg1;
 					Log.d(TAG, "Local user id: " + localuser);
 				}
 				break;
