@@ -264,11 +264,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		msg.what = what;
 		msg.setData(args);
 		
-		try {
-			mService.send(msg);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+		sendMsg(msg);
 	}
 	
 	public void sendApplicationMsg(ApplicationMsg appMsg, int what){
@@ -280,11 +276,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		msg.what = what;
 		msg.setData(args);
 		
-		try {
-			mService.send(msg);
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		}
+		sendMsg(msg);
 	}
 	
 	/** Defines callbacks for service binding, passed to bindService() */

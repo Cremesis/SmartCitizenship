@@ -56,7 +56,11 @@ public class ApplicationDroidPark extends Application {
 	}
 	
 	public Opinion getGameOpinion(Integer gameID, Integer userID) {
-		return opinionList.get(gameID).get(userID);
+		Map<Integer, Opinion> gameOpinions = opinionList.get(gameID);
+		if(gameOpinions != null)
+			return gameOpinions.get(userID);
+		else
+			return null;
 	}
 	
 	public Map<Integer, Opinion> getAllGameOpinions(Integer gameID) {
@@ -141,8 +145,10 @@ public class ApplicationDroidPark extends Application {
 				} if(compare == 0) { // The local rating is the same of the "new" one. Sum the copies.
 					int newNumCopies = currentUserRating.getNumCopies() + rating.getNumCopies();
 					Log.d(TAG, "added copies in rating");
+					if(newNumCopies > 0)
+						// if already present in the job list, it doesn't matter
+						jobs.add(currentUserRating);
 					updateNumCopies(currentUserRating, newNumCopies);
-					currentUserRating.setNumCopies(newNumCopies);
 					return true;
 				}
 			}
@@ -192,8 +198,10 @@ public class ApplicationDroidPark extends Application {
 			} if(compare == 0) { // The local queue is the same of the "new" one. Sum the copies.
 				int newNumCopies = currentQueue.getNumCopies() + queue.getNumCopies();
 				Log.d(TAG, "added copies in queue");
+				if(newNumCopies > 0)
+					// if already present in the job list, it doesn't matter
+					jobs.add(currentQueue);
 				updateNumCopies(currentQueue, newNumCopies);
-				currentQueue.setNumCopies(newNumCopies);
 				return true;
 			}
 		}
