@@ -70,7 +70,11 @@ public class ApplicationDroidPark extends Application {
 	}
 	
 	public Map<Integer, Opinion> getAllGameOpinions(Integer gameID) {
-	    	return opinionList.get(gameID);
+		Map<Integer, Opinion> map = opinionList.get(gameID);
+		if(map != null)
+			return opinionList.get(gameID);
+		else 
+			return new Hashtable<Integer, Opinion>();
 	}
 	
 	public Set<ApplicationMsg> getJobs(){
