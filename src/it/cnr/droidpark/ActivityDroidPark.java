@@ -39,7 +39,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	private ApplicationDroidPark application;
 	private static Date lastTimestamp;
 	private static int lastGameId;
-	private static int lastPressedGameButton;
+	public static int lastPressedGameButton;
 	
 	int cronoStarted = -1;
 	
