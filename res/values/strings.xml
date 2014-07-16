@@ -15,5 +15,6 @@
         <item name="voto commento">Lascia un voto e/o un commento</item>
         
     </string-array>
+        <string name="opinion_hint">Inserisci un commento</string>
 
 </resources>

@@ -21,8 +21,6 @@ import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.widget.Chronometer;
@@ -147,67 +145,67 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	}
 
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		/*int id = item.getItemId();
-		switch (id) {
-		case R.id.action_settings:
-			return true;
-		case R.id.new_room:
-			AlertDialog.Builder alert = new AlertDialog.Builder(this);
-
-			alert.setTitle("Title");
-			alert.setMessage("Message");
-
-			// Set an EditText view to get user input 
-			final EditText input = new EditText(this);
-			alert.setView(input);
-
-			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					String value = input.getText().toString();
-					// Do something with value!
-					Message msg = Message.obtain();
-					msg.what = EntertainmentService.CREATED_LOCAL_ROOM;
-					Bundle bundle = new Bundle();
-					bundle.putString("name", value);
-					msg.setData(bundle);
-					try {
-						mService.send(msg);
-					} catch (RemoteException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					//chatList.put(value.hashCode(), value);
-					//followedRooms.add(value.hashCode());
-					//chatListFragment.addRoom(value.hashCode());
-				}
-			});
-
-			alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int whichButton) {
-					// Canceled.
-				}
-			});
-
-			alert.show();
-
-			return true;
-		default:
-			break;
-		}*/
-		return super.onOptionsItemSelected(item);
-	}
+//	@Override
+//	public boolean onCreateOptionsMenu(Menu menu) {
+//		// Inflate the menu; this adds items to the action bar if it is present.
+//		getMenuInflater().inflate(R.menu.main, menu);
+//		return true;
+//	}
+//
+//	@Override
+//	public boolean onOptionsItemSelected(MenuItem item) {
+//		// Handle action bar item clicks here. The action bar will
+//		// automatically handle clicks on the Home/Up button, so long
+//		// as you specify a parent activity in AndroidManifest.xml.
+//		/*int id = item.getItemId();
+//		switch (id) {
+//		case R.id.action_settings:
+//			return true;
+//		case R.id.new_room:
+//			AlertDialog.Builder alert = new AlertDialog.Builder(this);
+//
+//			alert.setTitle("Title");
+//			alert.setMessage("Message");
+//
+//			// Set an EditText view to get user input 
+//			final EditText input = new EditText(this);
+//			alert.setView(input);
+//
+//			alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+//				public void onClick(DialogInterface dialog, int whichButton) {
+//					String value = input.getText().toString();
+//					// Do something with value!
+//					Message msg = Message.obtain();
+//					msg.what = EntertainmentService.CREATED_LOCAL_ROOM;
+//					Bundle bundle = new Bundle();
+//					bundle.putString("name", value);
+//					msg.setData(bundle);
+//					try {
+//						mService.send(msg);
+//					} catch (RemoteException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					//chatList.put(value.hashCode(), value);
+//					//followedRooms.add(value.hashCode());
+//					//chatListFragment.addRoom(value.hashCode());
+//				}
+//			});
+//
+//			alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//				public void onClick(DialogInterface dialog, int whichButton) {
+//					// Canceled.
+//				}
+//			});
+//
+//			alert.show();
+//
+//			return true;
+//		default:
+//			break;
+//		}*/
+//		return super.onOptionsItemSelected(item);
+//	}
 	
 
 	public void activateLongClick(){
