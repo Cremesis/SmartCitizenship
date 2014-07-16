@@ -3,10 +3,13 @@ package it.cnr.droidpark;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 
 import android.app.Activity;
 import android.app.ListActivity;
 import android.database.Cursor;
+import android.graphics.Path.Op;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
@@ -37,15 +40,23 @@ public class SimpleListViewActivity extends Activity {
 	    mainListView = (ListView) findViewById( R.id.mainListView );  
 	  
 	    // Create and populate a List of planet names.  
-	    String[] planets = new String[] { "Mercury", "Venus", "Earth", "Mars",  
-	                                      "Jupiter", "Saturn", "Uranus", "Neptune"};    
-	    ArrayList<String> planetList = new ArrayList<String>();  
-	    planetList.addAll( Arrays.asList(planets) );  
+	    //String[] planets = new String[] { "Mercury", "Venus", "Earth", "Mars",  
+	     //                                 "Jupiter", "Saturn", "Uranus", "Neptune"};    
+	    //ArrayList<String> planetList = new ArrayList<String>();
+	    ArrayList<String> comments = new ArrayList<String>();
+	    
+	    Set<Opinion> opinions = (Set<Opinion>) application.getAllGameOpinions(1).values();
+	    for (Opinion i : opinions){
+	    	comments.add(i.getMsg());
+	    }
+	    
+	    
+	    //planetList.addAll( Arrays.asList(planets) );  
 	    
 	    
 	      
 	    // Create ArrayAdapter using the planet list.  
-	    listAdapter = new ArrayAdapter<String>(this, R.layout.simple_raw_list, planetList);  
+	    listAdapter = new ArrayAdapter<String>(this, R.layout.simple_raw_list, comments);  
 	      
 	    // Add more planets. If you passed a String[] instead of a List<String>   
 	    // into the ArrayAdapter constructor, you must not add more items.   
