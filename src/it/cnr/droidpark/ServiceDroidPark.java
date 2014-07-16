@@ -169,34 +169,9 @@ public class ServiceDroidPark extends Service{
 						currentContext.put(entry.getKey(), true);
 					}
 					
-					switch(entry.getKey()) {
-						case GAME_1: {
-							Log.d(TAG, "Found GAME_1 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
-							// TODO: Send out our opinion about the "1" attraction if we have it
-						}
-						break;
-						
-						case GAME_2: {
-							Log.d(TAG, "Found GAME_2 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
-							// TODO: Send out our opinion about the "2" attraction if we have it
-						}
-						break;
-						
-						case GAME_3: {
-							Log.d(TAG, "Found GAME_3 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
-							// TODO: Send out our opinion about the "3" attraction if we have it 
-						}
-						break;
-						
-						case GAME_4: {
-							Log.d(TAG, "Found GAME_4 preference for user " + neighborsUserContext.get(thisNeighbor).getName());
-							// TODO: Send out our opinion about the "4" attraction if we have it
-						}
-						break;
-						
-						default:
-							Log.e(TAG, "Context not recognized: " + entry.getKey());
-					}
+					Log.d(TAG, "Found GAME_" + entry.getKey() + " preference for user " + neighborsUserContext.get(thisNeighbor).getName());
+					Opinion opinion = application.getGameOpinion(entry.getKey(), localuser);
+					if(opinion != null) sendMSGToPeer(opinion, thisNeighbor);
 					
 					// TODO: communicate with the activity
 					//mActivity.send(msg);
@@ -436,12 +411,10 @@ public class ServiceDroidPark extends Service{
 						Log.d(TAG,"PREFERENCE UPDATE "+ msg.arg1);
 						if(appContext.getValue(msg.arg1) != null) {
 							appContext.removeValue(msg.arg1);
-							Toast toast = Toast.makeText(getApplicationContext(), "Preferenza rimossa", Toast.LENGTH_SHORT);
-							toast.show();
+							Toast.makeText(getApplicationContext(), "Preferenza rimossa", Toast.LENGTH_SHORT).show();
 						} else {
 							appContext.addValue(msg.arg1, true);
-							Toast toast = Toast.makeText(getApplicationContext(), "Preferenza aggiunta", Toast.LENGTH_SHORT);
-							toast.show();
+							Toast.makeText(getApplicationContext(), "Preferenza aggiunta", Toast.LENGTH_SHORT).show();
 						}
 						appContext.update(cameo, CAMEOAppKey);						
 						
@@ -568,8 +541,8 @@ public class ServiceDroidPark extends Service{
 					sendProbabilisticMulticastMSG(msg, addrOk);
 				}
 			
-		msg.setNumCopies(0);
-		sendProbabilisticMulticastMSG(msg, addrLoses);
+			msg.setNumCopies(0);
+			sendProbabilisticMulticastMSG(msg, addrLoses);
 		}
 		application.updateNumCopies(msg, 0);
 	}
@@ -584,79 +557,79 @@ public class ServiceDroidPark extends Service{
 		}
 	}
 	
-		public void sendMSGToPeer(ApplicationMsg msg, InetAddress dest) {
-			try {
-				boolean result=cameo.sendMessage(writeObject(msg),
-						dest.getAddress(), false, CAMEOAppKey);
-				if(!result)
-					Log.e("TAG", "error with CAMEO");
-			} catch (RemoteException re) {
-				Log.e("TAG", "Got exception while sending message to peer: " +
-						Log.getStackTraceString(re));
-			}
+	public void sendMSGToPeer(Object msg, InetAddress dest) {
+		try {
+			boolean result=cameo.sendMessage(writeObject(msg),
+					dest.getAddress(), false, CAMEOAppKey);
+			if(!result)
+				Log.e("TAG", "error with CAMEO");
+		} catch (RemoteException re) {
+			Log.e("TAG", "Got exception while sending message to peer: " +
+					Log.getStackTraceString(re));
 		}
-		
-		private static byte[] writeObject(Object obj) {
-			byte[] yourBytes = null;
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			ObjectOutput out = null;
-			try {
-				out = new ObjectOutputStream(bos);   
-				out.writeObject(obj);
-				yourBytes = bos.toByteArray();
-			} catch (IOException e) {
-				Log.e(TAG, Log.getStackTraceString(e));
-			} finally {
-				try {
-					if (out != null) {
-						out.close();
-					}
-				} catch (IOException e) {
-					// ignore close exception
-					Log.e(TAG, Log.getStackTraceString(e));
-				}
-				try {
-					bos.close();
-				} catch (IOException e) {
-					// ignore close exception
-					Log.e(TAG, Log.getStackTraceString(e));
-				}
-			}
-			return yourBytes;
-		}
-
-		private static Object readObject(byte[] bytes) {
-			Object o = null;
-			ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-			ObjectInput in = null;
-			try {
-				in = new ObjectInputStream(bis);
-				o = in.readObject(); 
-			} catch (StreamCorruptedException e) {
-				Log.e(TAG, Log.getStackTraceString(e));
-			} catch (IOException e) {
-				Log.e(TAG, Log.getStackTraceString(e));
-			} catch (ClassNotFoundException e) {
-				Log.e(TAG, Log.getStackTraceString(e));
-			} finally {
-				try {
-					bis.close();
-				} catch (IOException e) {
-					// ignore close exception
-					Log.e(TAG, Log.getStackTraceString(e));
-				}
-				try {
-					if (in != null) {
-						in.close();
-					}
-				} catch (IOException e) {
-					// ignore close exception
-					Log.e(TAG, Log.getStackTraceString(e));
-				}
-			}
-			return o;
-		}
-
-		
 	}
+	
+	private static byte[] writeObject(Object obj) {
+		byte[] yourBytes = null;
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutput out = null;
+		try {
+			out = new ObjectOutputStream(bos);   
+			out.writeObject(obj);
+			yourBytes = bos.toByteArray();
+		} catch (IOException e) {
+			Log.e(TAG, Log.getStackTraceString(e));
+		} finally {
+			try {
+				if (out != null) {
+					out.close();
+				}
+			} catch (IOException e) {
+				// ignore close exception
+				Log.e(TAG, Log.getStackTraceString(e));
+			}
+			try {
+				bos.close();
+			} catch (IOException e) {
+				// ignore close exception
+				Log.e(TAG, Log.getStackTraceString(e));
+			}
+		}
+		return yourBytes;
+	}
+
+	private static Object readObject(byte[] bytes) {
+		Object o = null;
+		ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+		ObjectInput in = null;
+		try {
+			in = new ObjectInputStream(bis);
+			o = in.readObject(); 
+		} catch (StreamCorruptedException e) {
+			Log.e(TAG, Log.getStackTraceString(e));
+		} catch (IOException e) {
+			Log.e(TAG, Log.getStackTraceString(e));
+		} catch (ClassNotFoundException e) {
+			Log.e(TAG, Log.getStackTraceString(e));
+		} finally {
+			try {
+				bis.close();
+			} catch (IOException e) {
+				// ignore close exception
+				Log.e(TAG, Log.getStackTraceString(e));
+			}
+			try {
+				if (in != null) {
+					in.close();
+				}
+			} catch (IOException e) {
+				// ignore close exception
+				Log.e(TAG, Log.getStackTraceString(e));
+			}
+		}
+		return o;
+	}
+
+	
+}
 
