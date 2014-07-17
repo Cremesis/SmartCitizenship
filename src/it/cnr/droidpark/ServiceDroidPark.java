@@ -459,6 +459,12 @@ public class ServiceDroidPark extends Service{
 			}
 		}
 		youngestNeighbors =  youngest;
+		
+		// TODO remove
+		if(neighborsUserContext.get(youngestNeighbors[0]) != null)
+			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngestNeighbors[0]).getName());
+		if(neighborsUserContext.get(youngestNeighbors[1]) != null)
+			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngestNeighbors[1]).getName());
 	}
 	
 	public void spreadAndWaitNeighborIn(InetAddress newNeighbor) {
