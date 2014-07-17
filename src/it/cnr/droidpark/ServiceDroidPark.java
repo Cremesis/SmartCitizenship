@@ -237,7 +237,6 @@ public class ServiceDroidPark extends Service{
 						phaseN(userContext, ipAddress);
 					sendOpinions(ipAddress);
 				}
-				printNeighborsInfo();
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
@@ -266,24 +265,11 @@ public class ServiceDroidPark extends Service{
 				
 				neighborsUserContext.remove(thisNeighbor);
 				currentNeighbors.remove(thisNeighbor);
-				
-				// TODO: remove debug prints when done
-				printNeighborsInfo();
 			} catch (UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
 		}
 		
-		// TODO: remove debug prints when done
-		private void printNeighborsInfo() {
-			Log.d(TAG, "Number of neighbors using this app: " + currentNeighbors.size());
-			if(currentNeighbors.size() >= 2)
-				Log.d(TAG, "Youngest neighbors: " + neighborsUserContext.get(youngestNeighbors[0]).getName() +
-					" | " + neighborsUserContext.get(youngestNeighbors[1]).getName());
-			else if(currentNeighbors.size() == 1)
-				Log.d(TAG, "Youngest neighbor: " + neighborsUserContext.get(youngestNeighbors[0]).getName());
-		}
-
 		@Override
 		public void onCommunityChanged(String arg0) throws RemoteException {
 			// Don't care
@@ -297,6 +283,7 @@ public class ServiceDroidPark extends Service{
 			
 			if(msg instanceof Opinion) {
 				Opinion opinion = (Opinion) msg;
+				opinion.print();
 				boolean inserted = application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
 				if(inserted) {
 					Message message = Message.obtain();
@@ -307,6 +294,7 @@ public class ServiceDroidPark extends Service{
 				}
 			} else {
 				ApplicationMsg appMsg = (ApplicationMsg) msg;
+				appMsg.print();
 				boolean isNew = phase1(appMsg);
 				if(isNew) phase2(appMsg);
 			}

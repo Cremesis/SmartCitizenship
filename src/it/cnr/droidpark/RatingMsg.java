@@ -7,6 +7,7 @@ import java.util.Date;
 import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 @SuppressLint("SimpleDateFormat")
 public class RatingMsg implements ApplicationMsg {
@@ -109,5 +110,9 @@ public class RatingMsg implements ApplicationMsg {
 	@Override
 	public void setNumCopies(int numCopies) {
 		this.numCopies = numCopies;
+	}
+	
+	public void print() {
+		Log.d("Rating", "idGame: " + idGame + " | idUser: " + idUser + " | time: " + timestamp.toString() + " rating: " + eval + " | numCopies: " + numCopies);
 	}
 }

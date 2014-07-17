@@ -1,6 +1,5 @@
 package it.cnr.droidpark;
 
-import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
