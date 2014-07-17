@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mainLinearLayout"
     android:layout_width="match_parent"
@@ -10,70 +10,173 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.duratacode.MainActivity$PlaceholderFragment" >
 
-    <LinearLayout
-        android:id="@+id/row1Layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1.0" >
+   
 
         <ToggleButton
             android:id="@+id/toggleButton0"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:layout_weight="1.0"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            
+            
+            android:width="135dp"
+            android:height="115dp"
             android:onClick="queueDuration"
             android:textOff="@string/game_1"
             android:textOn="@string/game_1"
             android:longClickable="true" />
+        
+        
+        <TextView
+       	     android:id="@+id/textView2"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_marginTop="8dp"       	     
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_alignLeft="@+id/toggleButton0"
+       	     android:layout_below="@+id/toggleButton0"
+       	     android:text="Coda Misurata:  " />
+        
+        <TextView
+       	     android:id="@+id/textView3"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_alignLeft="@+id/toggleButton0"
+       	     android:layout_marginTop="8dp"
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_below="@+id/textView2"
+       	     android:text="Rating:  " />
 
         <ToggleButton
             android:id="@+id/toggleButton1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:layout_weight="1.0"
+            android:width="135dp"
+            android:height="115dp"            
+            android:layout_alignParentRight="true"
+			android:layout_alignParentTop="true"           
+            android:drawableTop="@drawable/big_wheel"
             android:onClick="queueDuration"
             android:textOff="@string/game_2"
             android:textOn="@string/game_2"
             android:longClickable="true" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/row2Layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1.0" >
-
+        
+        
+        <TextView
+       	     android:id="@+id/textView6"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_marginTop="8dp"
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_alignLeft="@+id/toggleButton1"
+       	     android:layout_below="@+id/toggleButton1"
+       	     android:text="Coda Misurata:  " />
+        
+        <TextView
+       	     android:id="@+id/textView7"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_alignLeft="@+id/toggleButton1"
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_marginTop="8dp"
+       	     android:layout_below="@+id/textView6"
+       	     android:text="Rating:  " />
+   
+  
         <ToggleButton
             android:id="@+id/toggleButton2"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            android:layout_weight="1.0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"                      
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textView3"
+            android:width="135dp"
+            android:height="115dp"			            
             android:onClick="queueDuration"
             android:textOff="@string/game_3"
             android:textOn="@string/game_3"
             android:longClickable="true" />
+        
+        
+        <TextView
+       	     android:id="@+id/textView4"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_marginTop="8dp"       	     
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_alignLeft="@+id/toggleButton2"
+       	     android:layout_below="@+id/toggleButton2"
+       	     android:text="Coda Misurata:  " />
+        
+        <TextView
+       	     android:id="@+id/textView5"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_alignLeft="@+id/toggleButton2"
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_marginTop="8dp"
+       	     android:layout_below="@+id/textView4"
+       	     android:text="Rating:  " />
 
         <ToggleButton
             android:id="@+id/toggleButton3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:layout_weight="1.0"
+            android:layout_alignParentRight="true"
+            
+            android:layout_below="@+id/textView7"
+            android:width="135dp"
+            android:height="115dp"    
+                  
             android:onClick="queueDuration"
             android:textOff="@string/game_4"
             android:textOn="@string/game_4"
             android:longClickable="true" />
-    </LinearLayout>
+        
+        
+  		 <TextView
+       	     android:id="@+id/textView8"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_marginTop="8dp"
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_alignLeft="@+id/toggleButton3"
+       	     android:layout_below="@+id/toggleButton3"
+       	     android:text="Coda Misurata:  " />
+        
+        <TextView
+       	     android:id="@+id/textView9"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"
+       	     android:layout_alignLeft="@+id/toggleButton3"
+       	     android:layout_marginLeft="10dp"
+       	     android:layout_marginTop="8dp"
+       	     android:layout_below="@+id/textView8"
+       	     android:text="Rating:  " />
+       
+   
+       	 <TextView
+       	     android:id="@+id/textView1"
+       	     android:layout_width="wrap_content"
+       	     android:layout_height="wrap_content"       	     
+       	     android:layout_alignLeft="@+id/toggleButton2"
+       	     android:layout_below="@+id/textView5"
+       	     android:layout_marginTop="25dp"
+       	     android:layout_marginLeft="50dp"
+       	     android:text="Durata Coda:  " />
 
-    <Chronometer
-        android:id="@+id/chronometer1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:layout_weight="0.5"
-        android:gravity="center_horizontal" />
-
-</LinearLayout>
+       	 <Chronometer
+       	     android:id="@+id/chronometer1"
+       	     android:layout_width="fill_parent"
+       	     android:layout_height="wrap_content"
+       	     android:layout_marginRight="10dp"      	     
+       	     android:layout_alignBaseline="@+id/textView1"
+       	     android:layout_toRightOf="@+id/textView1"
+       	     android:layout_below="@+id/textView9"
+       	      />
+       
+</RelativeLayout>
