@@ -540,7 +540,7 @@ public class ServiceDroidPark extends Service{
 			if(addrOk.size() != 0) {
 				int numCopiesToSend = copyToSend.getNumCopies()/addrOk.size();
 				int copiesKept = copyToSend.getNumCopies()%addrOk.size();
-				copyToSend.setNumCopies(numCopiesToSend);  // TODO controllo al crescere di k sulle copie potenzialmente perse
+				copyToSend.setNumCopies(numCopiesToSend);  
 				Log.d(TAG, "sending msg...");
 				copyToSend.print();
 				Log.d(TAG, "copies kept: " + copiesKept);
