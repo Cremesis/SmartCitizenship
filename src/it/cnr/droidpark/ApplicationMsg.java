@@ -13,4 +13,5 @@ public interface ApplicationMsg extends Parcelable, Serializable {
 	public int getNumCopies();
 	public void setNumCopies(int numCopies);
 	public ApplicationMsg duplicate();
+	public void print();
 }

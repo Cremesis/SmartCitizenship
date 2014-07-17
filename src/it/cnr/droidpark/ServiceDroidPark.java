@@ -10,10 +10,12 @@ import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -74,9 +76,10 @@ public class ServiceDroidPark extends Service{
 	
 	private boolean inQueue = false;
 	
-	private Hashtable<InetAddress, UserContext> neighborsUserContext;
-	private Hashtable<InetAddress, Map<Integer, Boolean>> neighbors; // Neighbors' ApplicationContext that use this application
-	private InetAddress[] youngestNeighbors = new InetAddress[2];
+	private Set<InetAddress> currentNeighbors;
+	private Map<InetAddress, UserContext> neighborsUserContext;
+	private Map<InetAddress, Map<Integer, Boolean>> usersAppContext; // Neighbors' ApplicationContext that use this application
+	private List<InetAddress> youngestNeighbors;
 	
 	ServiceConnection sc = new ServiceConnection(){
 
@@ -98,8 +101,10 @@ public class ServiceDroidPark extends Service{
 	public void onCreate() {
 		
 		application = (ApplicationDroidPark) getApplication();
-				
-		neighbors = new Hashtable<InetAddress, Map<Integer,Boolean>>();
+		
+		currentNeighbors = new HashSet<InetAddress>();
+		youngestNeighbors = new ArrayList<InetAddress>();
+		usersAppContext = new Hashtable<InetAddress, Map<Integer,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
 
@@ -133,6 +138,14 @@ public class ServiceDroidPark extends Service{
 			connectedToCameo=false;
 		}
 	}
+	
+	private void sendOpinions(InetAddress address) {
+		Opinion opinion;
+		for(Integer preference : usersAppContext.get(address).keySet()) {
+			opinion = application.getGameOpinion(preference, application.localuser);
+			if(opinion != null) sendMSGToPeer(opinion, address);
+		}
+	}
 
 	private final CallbackInterface.Stub callback = new CallbackInterface.Stub() { 
 
@@ -146,10 +159,11 @@ public class ServiceDroidPark extends Service{
 			try {
 				InetAddress thisNeighbor = InetAddress.getByAddress(address);
 				
-				Map<Integer, Boolean> currentContext = neighbors.get(thisNeighbor);
+				Map<Integer, Boolean> currentContext = usersAppContext.get(thisNeighbor);
 				if(currentContext == null) { // new neighbor
 					Map<Integer, Boolean> newRemoteAppContext = new HashMap<Integer, Boolean>();
-					neighbors.put(thisNeighbor, newRemoteAppContext);
+					usersAppContext.put(thisNeighbor, newRemoteAppContext);
+					currentNeighbors.add(thisNeighbor);
 					currentContext = newRemoteAppContext;
 					if(!inQueue) phaseN(neighborsUserContext.get(thisNeighbor), thisNeighbor);
 				}
@@ -168,38 +182,24 @@ public class ServiceDroidPark extends Service{
 				}
 				
 				sendOpinions(thisNeighbor);
-				
-				// TODO: remove debug prints when done
-				printNeighborsInfo();
 			} catch (UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
 		}
 		
-		private void sendOpinions(InetAddress address) {
-			Opinion opinion;
-			for(Integer preference : neighbors.get(address).keySet()) {
-				opinion = application.getGameOpinion(preference, application.localuser);
-				if(opinion != null) sendMSGToPeer(opinion, address);
-			}
-		}
-		
-		
-		
-		private void phase1(ApplicationMsg msg)
+		private boolean phase1(ApplicationMsg msg)
 				throws RemoteException {
 			Log.d(TAG, "phase1()");
-			boolean inserted;
+			boolean isNew;
 			
 			if(msg instanceof RatingMsg) {
 				RatingMsg rating = (RatingMsg) msg;
-				inserted = application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
-				
+				isNew = application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
 			} else {
 				QueueMsg queue = (QueueMsg) msg;
-				inserted = application.insertQueue(queue.getIdGame(), queue);
+				isNew = application.insertQueue(queue.getIdGame(), queue);
 			}
-			if(inserted) {
+			if(isNew) {
 				Message message = Message.obtain();
 				Bundle data = new Bundle();
 				message.what = msg instanceof RatingMsg?NEW_RATING_INSERTED:NEW_QUEUE_INSERTED;
@@ -207,6 +207,7 @@ public class ServiceDroidPark extends Service{
 				message.setData(data);
 				mActivity.send(message);
 			}
+			return isNew;
 		}
 		
 		private void phase2(ApplicationMsg appMsg) {
@@ -234,12 +235,13 @@ public class ServiceDroidPark extends Service{
 					" | age: " + userContext.getAge());
 			try {
 				InetAddress ipAddress = InetAddress.getByAddress(address);
-				if(neighbors.get(ipAddress) != null) { // If she has my application
+				neighborsUserContext.put(InetAddress.getByAddress(address), userContext);
+				if(usersAppContext.get(ipAddress) != null) { // If she has my application
+					currentNeighbors.add(ipAddress);
 					if(!inQueue)
 						phaseN(userContext, ipAddress);
 					sendOpinions(ipAddress);
 				}
-				neighborsUserContext.put(InetAddress.getByAddress(address), userContext);
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
@@ -267,24 +269,12 @@ public class ServiceDroidPark extends Service{
 				Log.d(TAG, "name: " + neighborsUserContext.get(thisNeighbor).getName());
 				
 				neighborsUserContext.remove(thisNeighbor);
-				
-				// TODO: remove debug prints when done
-				printNeighborsInfo();
+				currentNeighbors.remove(thisNeighbor);
 			} catch (UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
 		}
 		
-		// TODO: remove debug prints when done
-		private void printNeighborsInfo() {
-			Log.d(TAG, "Number of neighbors using this app: " + neighbors.size());
-			if(neighbors.size() >= 2)
-				Log.d(TAG, "Youngest neighbors: " + neighborsUserContext.get(youngestNeighbors[0]).getName() +
-					" | " + neighborsUserContext.get(youngestNeighbors[1]).getName());
-			else if(neighbors.size() == 1)
-				Log.d(TAG, "Youngest neighbor: " + neighborsUserContext.get(youngestNeighbors[0]).getName());
-		}
-
 		@Override
 		public void onCommunityChanged(String arg0) throws RemoteException {
 			// Don't care
@@ -296,8 +286,18 @@ public class ServiceDroidPark extends Service{
 			
 			Object msg = readObject(msgReceived);
 			
+			// TODO debug...
+			InetAddress thisNeighbor = null;
+			try {
+				thisNeighbor = InetAddress.getByAddress(address);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Log.d(TAG, neighborsUserContext.get(thisNeighbor).getName() + " sent...");
+			
 			if(msg instanceof Opinion) {
 				Opinion opinion = (Opinion) msg;
+				opinion.print();
 				boolean inserted = application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
 				if(inserted) {
 					Message message = Message.obtain();
@@ -309,8 +309,9 @@ public class ServiceDroidPark extends Service{
 				}
 			} else {
 				ApplicationMsg appMsg = (ApplicationMsg) msg;
-				phase1(appMsg);
-				phase2(appMsg);
+				appMsg.print();
+				boolean isNew = phase1(appMsg);
+				if(isNew) phase2(appMsg);
 			}
 		}
 	};
@@ -368,7 +369,9 @@ public class ServiceDroidPark extends Service{
 					
 					Opinion opinion = msg.getData().getParcelable("msg");
 					application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
-					
+					for(InetAddress neighbor : currentNeighbors) {
+						sendOpinions(neighbor);
+					}
 				}
 				break;
 				
@@ -377,7 +380,7 @@ public class ServiceDroidPark extends Service{
 					
 					RatingMsg rate = msg.getData().getParcelable("msg");
 					application.insertRating(rate.getIdGame(), application.localuser, rate);
-					if (inQueue == false)
+					if (!inQueue)
 						spreadAndWait(rate);
 					else
 						probAlgorithm(rate);
@@ -409,9 +412,8 @@ public class ServiceDroidPark extends Service{
 				case PERFECT_FORWARDER_IN_QUEUE:{  
 					inQueue = true;
 				
-					for (ApplicationMsg appMsg : application.getJobs())
-						if(appMsg.getNumCopies()>0)						
-							probAlgorithm(appMsg);
+//					for (ApplicationMsg appMsg : application.getJobs())
+//						probAlgorithm(appMsg);
 				}
 				break;
 					
@@ -421,6 +423,7 @@ public class ServiceDroidPark extends Service{
 						Log.d(TAG,"PREFERENCE UPDATE "+ msg.arg1);
 						if(appContext.getValue(msg.arg1) != null) {
 							appContext.removeValue(msg.arg1);
+							application.getAllGameOpinions(msg.arg1).clear();
 							Toast.makeText(getApplicationContext(), "Preferenza rimossa", Toast.LENGTH_SHORT).show();
 						} else {
 							appContext.addValue(msg.arg1, true);
@@ -447,8 +450,9 @@ public class ServiceDroidPark extends Service{
 	public void updateYoungestForwarders() {
 		int min1 = Integer.MAX_VALUE, min2 = Integer.MAX_VALUE, currentAge; // min1 <= min2
 		InetAddress[] youngest = new InetAddress[2];
-		for(InetAddress neighbor : neighbors.keySet()) {
+		for(InetAddress neighbor : currentNeighbors) {
 			currentAge = neighborsUserContext.get(neighbor).getAge();
+			
 			if(currentAge <= min1) { // the "=" part is needed to get the youngest ones, even if they have the same age
 				min2 = min1;
 				min1 = currentAge;
@@ -461,15 +465,23 @@ public class ServiceDroidPark extends Service{
 				youngest[1] = neighbor;
 			}
 		}
-		youngestNeighbors =  youngest;
+		youngestNeighbors.clear();
+		if(youngest[0] != null) {
+			youngestNeighbors.add(youngest[0]);
+			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngest[0]).getName());
+		}
+		if(youngest[1] != null) {
+			youngestNeighbors.add(youngest[1]);
+			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngest[1]).getName());
+		}
 	}
 	
 	public void spreadAndWaitNeighborIn(InetAddress newNeighbor) {
 		Log.d(TAG, "spreadAndWaitNeighborIn()");
 		updateYoungestForwarders();
 		int newNeighborAge = neighborsUserContext.get(newNeighbor).getAge();
-		if((youngestNeighbors[1] != null && newNeighborAge <= neighborsUserContext.get(youngestNeighbors[1]).getAge()) // younger than the second youngest
-				|| newNeighborAge <= neighborsUserContext.get(youngestNeighbors[0]).getAge()) { // younger than the first youngest
+		if((youngestNeighbors.size() == 2 && newNeighborAge <= neighborsUserContext.get(youngestNeighbors.get(1)).getAge()) // younger than the second youngest
+				|| newNeighborAge <= neighborsUserContext.get(youngestNeighbors.get(0)).getAge()) { // younger than the first youngest
 			for (ApplicationMsg appMsg : application.getJobs()) {
 				ApplicationMsg copyToSend = appMsg.duplicate();
 				int numCopiesToSend =(int) Math.floor(((double)copyToSend.getNumCopies())/2);
@@ -488,20 +500,24 @@ public class ServiceDroidPark extends Service{
 	}
 	
 	public void spreadAndWait(ApplicationMsg msg) {
-		Set<InetAddress> notForwarders = new HashSet<InetAddress>(neighbors.keySet());
+		Log.d(TAG, "spreadAndWait()");
+		Set<InetAddress> notForwarders = new HashSet<InetAddress>(currentNeighbors);
 		updateYoungestForwarders();
-		notForwarders.removeAll(Arrays.asList(youngestNeighbors));
+		notForwarders.removeAll(youngestNeighbors);
 		
 		ApplicationMsg copyToSend = msg.duplicate();
-		int numCopiesToSend =(int) Math.floor(((double)copyToSend.getNumCopies() - notForwarders.size())/3);
+		int numCopiesToSend = (int) Math.floor((copyToSend.getNumCopies() - notForwarders.size())/(youngestNeighbors.size()+1.0d));
 		for(InetAddress thisNeighbor : youngestNeighbors) {
-			if(thisNeighbor == null) continue;
 			copyToSend.setNumCopies(numCopiesToSend);
+			Log.d(TAG, "sending msg...");
+			copyToSend.print();
 			sendMSGToPeer(copyToSend, thisNeighbor);
 			application.updateNumCopies(msg, msg.getNumCopies() - numCopiesToSend);
 		}
 		for(InetAddress thisNeighbor : notForwarders) {
 			copyToSend.setNumCopies(1);
+			Log.d(TAG, "sending msg...");
+			copyToSend.print();
 			sendMSGToPeer(copyToSend, thisNeighbor);
 			application.updateNumCopies(msg, msg.getNumCopies() - 1);
 		}
@@ -513,24 +529,33 @@ public class ServiceDroidPark extends Service{
 	}
 	
 	public void probAlgorithm(ApplicationMsg msg){
-		if (neighbors.size()!=0){
-			double p = setProbabilityTrasmission(neighbors.size());
+		Log.d(TAG, "probAlgorithm()");
+		if (currentNeighbors.size()!=0){
+			double p = setProbabilityTrasmission(currentNeighbors.size());
 			Set<InetAddress> addrOk = new HashSet<InetAddress>();
 			Set<InetAddress> addrLoses = new HashSet<InetAddress>();
 		
-			for (InetAddress i : neighbors.keySet())
-				if (Math.random()< p && msg.getNumCopies() < addrOk.size())
+			for (InetAddress i : currentNeighbors)
+				if (Math.random()< p && msg.getNumCopies() >= addrOk.size()) {
 					addrOk.add(i);
-				else
+					Log.d(TAG, "forw: " + neighborsUserContext.get(i).getName());
+				} else {
 					addrLoses.add(i);
-			
+					Log.d(TAG, "NO forw: " + neighborsUserContext.get(i).getName());
+				}
 			ApplicationMsg copyToSend = msg.duplicate();
-			int numCopiesToSend = copyToSend.getNumCopies()/addrOk.size();
-			int copiesKept = copyToSend.getNumCopies()%addrOk.size();
-			copyToSend.setNumCopies(numCopiesToSend);  // TODO controllo al crescere di k sulle copie potenzialmente perse
-			sendToMultipleRecipients(copyToSend, addrOk);
-			application.updateNumCopies(msg, copiesKept);
-			
+			if(addrOk.size() != 0) {
+				int numCopiesToSend = copyToSend.getNumCopies()/addrOk.size();
+				int copiesKept = copyToSend.getNumCopies()%addrOk.size();
+				copyToSend.setNumCopies(numCopiesToSend);  
+				Log.d(TAG, "sending msg...");
+				copyToSend.print();
+				Log.d(TAG, "copies kept: " + copiesKept);
+				sendToMultipleRecipients(copyToSend, addrOk);
+				application.updateNumCopies(msg, copiesKept);
+			} else {
+				Log.d(TAG, "No forwarders");
+			}
 			copyToSend.setNumCopies(0);
 			sendToMultipleRecipients(copyToSend, addrLoses);
 		}
@@ -546,12 +571,13 @@ public class ServiceDroidPark extends Service{
 	
 	public void sendMSGToPeer(Object msg, InetAddress dest) {
 		try {
+			Log.d(TAG, "sendMSGToPeer(): msg: "+msg+", dest: "+dest);
 			boolean result=cameo.sendMessage(writeObject(msg),
 					dest.getAddress(), false, CAMEOAppKey);
 			if(!result)
-				Log.e("TAG", "error with CAMEO");
+				Log.e(TAG, "error with CAMEO");
 		} catch (RemoteException re) {
-			Log.e("TAG", "Got exception while sending message to peer: " +
+			Log.e(TAG, "Got exception while sending message to peer: " +
 					Log.getStackTraceString(re));
 		}
 	}

@@ -8,6 +8,7 @@ import java.util.Date;
 import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 @SuppressLint("SimpleDateFormat")
 public class Opinion implements Parcelable, Serializable {
@@ -90,5 +91,9 @@ public class Opinion implements Parcelable, Serializable {
 	}
 	public void setMsg(String msg) {
 		this.msg = msg;
+	}
+
+	public void print() {
+		Log.d("Opinion", "idGame: " + idGame + " | idUser: " + idUser + " | time: " + timestamp.toString() + " opinion: " + msg);
 	}
 }

@@ -7,6 +7,7 @@ import java.util.Date;
 import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 @SuppressLint("SimpleDateFormat")
 public class QueueMsg implements ApplicationMsg {
@@ -99,5 +100,9 @@ public class QueueMsg implements ApplicationMsg {
 	@Override
 	public void setNumCopies(int numCopies) {
 		this.numCopies = numCopies;
+	}
+	
+	public void print() {
+		Log.d("Queue", "idGame: " + idGame + " | time: " + timestamp.toString() + " duration: " + duration + " | numCopies: " + numCopies);
 	}
 }

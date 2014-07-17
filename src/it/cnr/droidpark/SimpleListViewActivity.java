@@ -1,10 +1,8 @@
 package it.cnr.droidpark;
 
 
-import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 import android.app.Activity;
 import android.os.Bundle;
