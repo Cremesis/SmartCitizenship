@@ -38,11 +38,6 @@ public class ApplicationDroidPark extends Application {
 		queueList = new Hashtable<Integer, QueueMsg>(NUMBER_OF_GAMES);
 		ratingList = new Hashtable<Integer, Map<Integer, RatingMsg>>(NUMBER_OF_GAMES);
 		opinionList = new Hashtable<Integer, Map<Integer, Opinion>>(NUMBER_OF_GAMES);
-		
-		Map<Integer, Opinion> demoMap = new Hashtable<Integer, Opinion>();
-		demoMap.put(466546, new Opinion(1, 466546, Calendar.getInstance().getTime(), "Questa è un'opinione"));
-		demoMap.put(87678, new Opinion(1, 87678, Calendar.getInstance().getTime(), "Questa è un'altra opinione"));
-		opinionList.put(GAME_1, demoMap);
 	}
 	
 	public float getRatingAverage(Integer gameID) {
@@ -142,8 +137,8 @@ public class ApplicationDroidPark extends Application {
 	 * @param gameID
 	 * @param userID
 	 * @param rating
-	 * @return true if the rating was inserted/updated (because number of copies are not
-	 *         0, or because it is more recent or new), false otherwise
+	 * @return true if the rating is new
+	 * 
 	 */
 	public boolean insertRating(Integer gameID, Integer userID, RatingMsg rating) {
 		boolean rv = true;
@@ -161,6 +156,7 @@ public class ApplicationDroidPark extends Application {
 					int newNumCopies = currentUserRating.getNumCopies() + rating.getNumCopies();
 					Log.d(TAG, "added copies in rating");
 					updateNumCopies(rating, newNumCopies);
+					rv = false;
 				} else {
 					Log.d(TAG, "inserting new rating message");
 					if(rating.getNumCopies() > 0) 
@@ -178,7 +174,6 @@ public class ApplicationDroidPark extends Application {
 			jobs.remove(currentUserRating);
 		if(rating.getNumCopies() > 0)
 			jobs.add(rating);
-		else rv = false;
 		
 		return rv;
 	}
@@ -190,8 +185,8 @@ public class ApplicationDroidPark extends Application {
 	 * 
 	 * @param gameID
 	 * @param queue
-	 * @return true if the queue was inserted/updated (because number of copies are not
-	 *         0, or because it is more recent or new), false otherwise
+	 * @return true if the queue is new
+	 * 
 	 */
 	public boolean insertQueue(Integer gameID, QueueMsg queue) {
 		boolean rv = true;
@@ -206,6 +201,7 @@ public class ApplicationDroidPark extends Application {
 				int newNumCopies = currentQueue.getNumCopies() + queue.getNumCopies();
 				Log.d(TAG, "added copies in queue");
 				updateNumCopies(queue, newNumCopies);
+				rv = false;
 			} else {
 				Log.d(TAG, "inserting new queue message");
 				if(queue.getNumCopies() > 0) 
@@ -218,7 +214,6 @@ public class ApplicationDroidPark extends Application {
 			jobs.remove(currentQueue);
 		if(queue.getNumCopies() > 0)
 			jobs.add(queue);
-		else rv = false;
 		
 		return rv;
 	}

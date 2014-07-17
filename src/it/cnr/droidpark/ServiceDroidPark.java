@@ -73,8 +73,9 @@ public class ServiceDroidPark extends Service{
 	
 	private boolean inQueue = false;
 	
-	private Hashtable<InetAddress, UserContext> neighborsUserContext;
-	private Hashtable<InetAddress, Map<Integer, Boolean>> neighbors; // Neighbors' ApplicationContext that use this application
+	private Set<InetAddress> currentNeighbors;
+	private Map<InetAddress, UserContext> neighborsUserContext;
+	private Map<InetAddress, Map<Integer, Boolean>> usersAppContext; // Neighbors' ApplicationContext that use this application
 	private InetAddress[] youngestNeighbors = new InetAddress[2];
 	
 	ServiceConnection sc = new ServiceConnection(){
@@ -98,7 +99,8 @@ public class ServiceDroidPark extends Service{
 		
 		application = (ApplicationDroidPark) getApplication();
 		
-		neighbors = new Hashtable<InetAddress, Map<Integer,Boolean>>();
+		currentNeighbors = new HashSet<InetAddress>();
+		usersAppContext = new Hashtable<InetAddress, Map<Integer,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
 
@@ -132,6 +134,14 @@ public class ServiceDroidPark extends Service{
 			connectedToCameo=false;
 		}
 	}
+	
+	private void sendOpinions(InetAddress address) {
+		Opinion opinion;
+		for(Integer preference : usersAppContext.get(address).keySet()) {
+			opinion = application.getGameOpinion(preference, localuser);
+			if(opinion != null) sendMSGToPeer(opinion, address);
+		}
+	}
 
 	private final CallbackInterface.Stub callback = new CallbackInterface.Stub() { 
 
@@ -145,10 +155,11 @@ public class ServiceDroidPark extends Service{
 			try {
 				InetAddress thisNeighbor = InetAddress.getByAddress(address);
 				
-				Map<Integer, Boolean> currentContext = neighbors.get(thisNeighbor);
+				Map<Integer, Boolean> currentContext = usersAppContext.get(thisNeighbor);
 				if(currentContext == null) { // new neighbor
 					Map<Integer, Boolean> newRemoteAppContext = new HashMap<Integer, Boolean>();
-					neighbors.put(thisNeighbor, newRemoteAppContext);
+					usersAppContext.put(thisNeighbor, newRemoteAppContext);
+					currentNeighbors.add(thisNeighbor);
 					currentContext = newRemoteAppContext;
 					if(!inQueue) phaseN(neighborsUserContext.get(thisNeighbor), thisNeighbor);
 				}
@@ -167,41 +178,31 @@ public class ServiceDroidPark extends Service{
 				}
 				
 				sendOpinions(thisNeighbor);
-				
-				// TODO: remove debug prints when done
-				printNeighborsInfo();
 			} catch (UnknownHostException e) {
 				Log.e(TAG, Log.getStackTraceString(e));
 			}
 		}
 		
-		private void sendOpinions(InetAddress address) {
-			Opinion opinion;
-			for(Integer preference : neighbors.get(address).keySet()) {
-				opinion = application.getGameOpinion(preference, localuser);
-				if(opinion != null) sendMSGToPeer(opinion, address);
-			}
-		}
-		
-		private void phase1(ApplicationMsg msg)
+		private boolean phase1(ApplicationMsg msg)
 				throws RemoteException {
 			Log.d(TAG, "phase1()");
-			boolean inserted;
+			boolean isNew;
 			
 			if(msg instanceof RatingMsg) {
 				RatingMsg rating = (RatingMsg) msg;
-				inserted = application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
+				isNew = application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
 			} else {
 				QueueMsg queue = (QueueMsg) msg;
-				inserted = application.insertQueue(queue.getIdGame(), queue);
+				isNew = application.insertQueue(queue.getIdGame(), queue);
 			}
-			if(inserted) {
+			if(isNew) {
 				Message message = Message.obtain();
 				Bundle data = new Bundle();
 				message.what = msg instanceof RatingMsg?NEW_RATING_INSERTED:NEW_QUEUE_INSERTED;
 				data.putParcelable(msg instanceof RatingMsg?"rating":"queue", msg);
 				mActivity.send(message);
 			}
+			return isNew;
 		}
 		
 		private void phase2(ApplicationMsg appMsg) {
@@ -229,12 +230,14 @@ public class ServiceDroidPark extends Service{
 					" | age: " + userContext.getAge());
 			try {
 				InetAddress ipAddress = InetAddress.getByAddress(address);
-				if(neighbors.get(ipAddress) != null) { // If she has my application
+				neighborsUserContext.put(InetAddress.getByAddress(address), userContext);
+				if(usersAppContext.get(ipAddress) != null) { // If she has my application
+					currentNeighbors.add(ipAddress);
 					if(!inQueue)
 						phaseN(userContext, ipAddress);
 					sendOpinions(ipAddress);
 				}
-				neighborsUserContext.put(InetAddress.getByAddress(address), userContext);
+				printNeighborsInfo();
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
@@ -262,6 +265,7 @@ public class ServiceDroidPark extends Service{
 				Log.d(TAG, "name: " + neighborsUserContext.get(thisNeighbor).getName());
 				
 				neighborsUserContext.remove(thisNeighbor);
+				currentNeighbors.remove(thisNeighbor);
 				
 				// TODO: remove debug prints when done
 				printNeighborsInfo();
@@ -272,11 +276,11 @@ public class ServiceDroidPark extends Service{
 		
 		// TODO: remove debug prints when done
 		private void printNeighborsInfo() {
-			Log.d(TAG, "Number of neighbors using this app: " + neighbors.size());
-			if(neighbors.size() >= 2)
+			Log.d(TAG, "Number of neighbors using this app: " + currentNeighbors.size());
+			if(currentNeighbors.size() >= 2)
 				Log.d(TAG, "Youngest neighbors: " + neighborsUserContext.get(youngestNeighbors[0]).getName() +
 					" | " + neighborsUserContext.get(youngestNeighbors[1]).getName());
-			else if(neighbors.size() == 1)
+			else if(currentNeighbors.size() == 1)
 				Log.d(TAG, "Youngest neighbor: " + neighborsUserContext.get(youngestNeighbors[0]).getName());
 		}
 
@@ -303,8 +307,8 @@ public class ServiceDroidPark extends Service{
 				}
 			} else {
 				ApplicationMsg appMsg = (ApplicationMsg) msg;
-				phase1(appMsg);
-				phase2(appMsg);
+				boolean isNew = phase1(appMsg);
+				if(isNew) phase2(appMsg);
 			}
 		}
 	};
@@ -373,6 +377,9 @@ public class ServiceDroidPark extends Service{
 					
 					Opinion opinion = msg.getData().getParcelable("msg");
 					application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
+					for(InetAddress neighbor : currentNeighbors) {
+						sendOpinions(neighbor);
+					}
 				}
 				break;
 				
@@ -381,7 +388,7 @@ public class ServiceDroidPark extends Service{
 					
 					RatingMsg rate = msg.getData().getParcelable("msg");
 					application.insertRating(rate.getIdGame(), localuser, rate);
-					if (inQueue == false)
+					if (!inQueue)
 						spreadAndWait(rate);
 					else
 						probAlgorithm(rate);
@@ -402,9 +409,8 @@ public class ServiceDroidPark extends Service{
 				case PERFECT_FORWARDER_IN_QUEUE:{  
 					inQueue = true;
 				
-					for (ApplicationMsg appMsg : application.getJobs())
-						if(appMsg.getNumCopies()>0)						
-							probAlgorithm(appMsg);
+//					for (ApplicationMsg appMsg : application.getJobs())
+//						probAlgorithm(appMsg);
 				}
 				break;
 					
@@ -440,7 +446,7 @@ public class ServiceDroidPark extends Service{
 	public void updateYoungestForwarders() {
 		int min1 = Integer.MAX_VALUE, min2 = Integer.MAX_VALUE, currentAge; // min1 <= min2
 		InetAddress[] youngest = new InetAddress[2];
-		for(InetAddress neighbor : neighbors.keySet()) {
+		for(InetAddress neighbor : currentNeighbors) {
 			currentAge = neighborsUserContext.get(neighbor).getAge();
 			if(currentAge <= min1) { // the "=" part is needed to get the youngest ones, even if they have the same age
 				min2 = min1;
@@ -481,7 +487,8 @@ public class ServiceDroidPark extends Service{
 	}
 	
 	public void spreadAndWait(ApplicationMsg msg) {
-		Set<InetAddress> notForwarders = new HashSet<InetAddress>(neighbors.keySet());
+		Log.d(TAG, "spreadAndWait()");
+		Set<InetAddress> notForwarders = new HashSet<InetAddress>(currentNeighbors);
 		updateYoungestForwarders();
 		notForwarders.removeAll(Arrays.asList(youngestNeighbors));
 		
@@ -506,24 +513,24 @@ public class ServiceDroidPark extends Service{
 	}
 	
 	public void probAlgorithm(ApplicationMsg msg){
-		if (neighbors.size()!=0){
-			double p = setProbabilityTrasmission(neighbors.size());
+		if (currentNeighbors.size()!=0){
+			double p = setProbabilityTrasmission(currentNeighbors.size());
 			Set<InetAddress> addrOk = new HashSet<InetAddress>();
 			Set<InetAddress> addrLoses = new HashSet<InetAddress>();
 		
-			for (InetAddress i : neighbors.keySet())
+			for (InetAddress i : currentNeighbors)
 				if (Math.random()< p && msg.getNumCopies() < addrOk.size())
 					addrOk.add(i);
 				else
 					addrLoses.add(i);
-			
 			ApplicationMsg copyToSend = msg.duplicate();
-			int numCopiesToSend = copyToSend.getNumCopies()/addrOk.size();
-			int copiesKept = copyToSend.getNumCopies()%addrOk.size();
-			copyToSend.setNumCopies(numCopiesToSend);  // TODO controllo al crescere di k sulle copie potenzialmente perse
-			sendToMultipleRecipients(copyToSend, addrOk);
-			application.updateNumCopies(msg, copiesKept);
-			
+			if(addrOk.size() != 0) {
+				int numCopiesToSend = copyToSend.getNumCopies()/addrOk.size();
+				int copiesKept = copyToSend.getNumCopies()%addrOk.size();
+				copyToSend.setNumCopies(numCopiesToSend);  // TODO controllo al crescere di k sulle copie potenzialmente perse
+				sendToMultipleRecipients(copyToSend, addrOk);
+				application.updateNumCopies(msg, copiesKept);
+			}
 			copyToSend.setNumCopies(0);
 			sendToMultipleRecipients(copyToSend, addrLoses);
 		}
