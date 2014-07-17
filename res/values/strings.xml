@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">DroidPark</string>
-    <string name="new_room">New Room</string>
     <string name="action_settings">Settings</string>
     <string name="game_1">Roller Coaster</string>
     <string name="game_2">Big Wheel</string>

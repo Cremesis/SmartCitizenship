@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -462,9 +463,9 @@ public class ServiceDroidPark extends Service{
 		youngestNeighbors =  youngest;
 		
 		// TODO remove
-		if(neighborsUserContext.get(youngestNeighbors[0]) != null)
+		if(youngestNeighbors[0] != null && neighborsUserContext.get(youngestNeighbors[0]) != null)
 			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngestNeighbors[0]).getName());
-		if(neighborsUserContext.get(youngestNeighbors[1]) != null)
+		if(youngestNeighbors[1] != null && neighborsUserContext.get(youngestNeighbors[1]) != null)
 			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngestNeighbors[1]).getName());
 	}
 	
@@ -495,7 +496,10 @@ public class ServiceDroidPark extends Service{
 		Log.d(TAG, "spreadAndWait()");
 		Set<InetAddress> notForwarders = new HashSet<InetAddress>(currentNeighbors);
 		updateYoungestForwarders();
-		List<InetAddress> yNeighbors = Arrays.asList(youngestNeighbors);
+		List<InetAddress> yNeighbors = new ArrayList<InetAddress>();
+		for(int i = 0; i < youngestNeighbors.length; i++)
+			if(youngestNeighbors[i] != null) 
+				yNeighbors.add(youngestNeighbors[i]);
 		notForwarders.removeAll(yNeighbors);
 		
 		ApplicationMsg copyToSend = msg.duplicate();
@@ -564,12 +568,13 @@ public class ServiceDroidPark extends Service{
 	
 	public void sendMSGToPeer(Object msg, InetAddress dest) {
 		try {
+			Log.d(TAG, "sendMSGToPeer(): msg: "+msg+", dest: "+dest);
 			boolean result=cameo.sendMessage(writeObject(msg),
 					dest.getAddress(), false, CAMEOAppKey);
 			if(!result)
-				Log.e("TAG", "error with CAMEO");
+				Log.e(TAG, "error with CAMEO");
 		} catch (RemoteException re) {
-			Log.e("TAG", "Got exception while sending message to peer: " +
+			Log.e(TAG, "Got exception while sending message to peer: " +
 					Log.getStackTraceString(re));
 		}
 	}
