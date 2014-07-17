@@ -117,7 +117,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 					switch (msg.arg1){
 					case ApplicationDroidPark.GAME_1: 
 						tw = (TextView) findViewById(R.id.textView3);
-						tw.setText("Rating: " + application.getRatingAverage(1));
+						tw.setText("Rating: " + application.getRatingAverage(application.GAME_1));
 						break;
 					case ApplicationDroidPark.GAME_2: 
 						tw = (TextView) findViewById(R.id.textView7);
