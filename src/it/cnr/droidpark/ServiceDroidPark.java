@@ -78,7 +78,7 @@ public class ServiceDroidPark extends Service{
 	private Set<InetAddress> currentNeighbors;
 	private Map<InetAddress, UserContext> neighborsUserContext;
 	private Map<InetAddress, Map<Integer, Boolean>> usersAppContext; // Neighbors' ApplicationContext that use this application
-	private InetAddress[] youngestNeighbors = new InetAddress[2];
+	private List<InetAddress> youngestNeighbors;
 	
 	ServiceConnection sc = new ServiceConnection(){
 
@@ -102,6 +102,7 @@ public class ServiceDroidPark extends Service{
 		application = (ApplicationDroidPark) getApplication();
 		
 		currentNeighbors = new HashSet<InetAddress>();
+		youngestNeighbors = new ArrayList<InetAddress>();
 		usersAppContext = new Hashtable<InetAddress, Map<Integer,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
@@ -448,6 +449,7 @@ public class ServiceDroidPark extends Service{
 		InetAddress[] youngest = new InetAddress[2];
 		for(InetAddress neighbor : currentNeighbors) {
 			currentAge = neighborsUserContext.get(neighbor).getAge();
+			
 			if(currentAge <= min1) { // the "=" part is needed to get the youngest ones, even if they have the same age
 				min2 = min1;
 				min1 = currentAge;
@@ -460,21 +462,23 @@ public class ServiceDroidPark extends Service{
 				youngest[1] = neighbor;
 			}
 		}
-		youngestNeighbors =  youngest;
-		
-		// TODO remove
-		if(youngestNeighbors[0] != null && neighborsUserContext.get(youngestNeighbors[0]) != null)
-			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngestNeighbors[0]).getName());
-		if(youngestNeighbors[1] != null && neighborsUserContext.get(youngestNeighbors[1]) != null)
-			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngestNeighbors[1]).getName());
+		youngestNeighbors.clear();
+		if(youngest[0] != null) {
+			youngestNeighbors.add(youngest[0]);
+			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngest[0]).getName());
+		}
+		if(youngest[1] != null) {
+			youngestNeighbors.add(youngest[1]);
+			Log.d(TAG, "Forwarder: " + neighborsUserContext.get(youngest[1]).getName());
+		}
 	}
 	
 	public void spreadAndWaitNeighborIn(InetAddress newNeighbor) {
 		Log.d(TAG, "spreadAndWaitNeighborIn()");
 		updateYoungestForwarders();
 		int newNeighborAge = neighborsUserContext.get(newNeighbor).getAge();
-		if((youngestNeighbors[1] != null && newNeighborAge <= neighborsUserContext.get(youngestNeighbors[1]).getAge()) // younger than the second youngest
-				|| newNeighborAge <= neighborsUserContext.get(youngestNeighbors[0]).getAge()) { // younger than the first youngest
+		if((youngestNeighbors.size() == 2 && newNeighborAge <= neighborsUserContext.get(youngestNeighbors.get(1)).getAge()) // younger than the second youngest
+				|| newNeighborAge <= neighborsUserContext.get(youngestNeighbors.get(0)).getAge()) { // younger than the first youngest
 			for (ApplicationMsg appMsg : application.getJobs()) {
 				ApplicationMsg copyToSend = appMsg.duplicate();
 				int numCopiesToSend =(int) Math.floor(((double)copyToSend.getNumCopies())/2);
@@ -496,15 +500,11 @@ public class ServiceDroidPark extends Service{
 		Log.d(TAG, "spreadAndWait()");
 		Set<InetAddress> notForwarders = new HashSet<InetAddress>(currentNeighbors);
 		updateYoungestForwarders();
-		List<InetAddress> yNeighbors = new ArrayList<InetAddress>();
-		for(int i = 0; i < youngestNeighbors.length; i++)
-			if(youngestNeighbors[i] != null) 
-				yNeighbors.add(youngestNeighbors[i]);
-		notForwarders.removeAll(yNeighbors);
+		notForwarders.removeAll(youngestNeighbors);
 		
 		ApplicationMsg copyToSend = msg.duplicate();
-		int numCopiesToSend = (int) Math.floor((copyToSend.getNumCopies() - notForwarders.size())/(yNeighbors.size()+1.0d));
-		for(InetAddress thisNeighbor : yNeighbors) {
+		int numCopiesToSend = (int) Math.floor((copyToSend.getNumCopies() - notForwarders.size())/(youngestNeighbors.size()+1.0d));
+		for(InetAddress thisNeighbor : youngestNeighbors) {
 			copyToSend.setNumCopies(numCopiesToSend);
 			Log.d(TAG, "sending msg...");
 			copyToSend.print();
