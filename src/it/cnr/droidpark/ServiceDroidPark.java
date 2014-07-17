@@ -281,6 +281,15 @@ public class ServiceDroidPark extends Service{
 			
 			Object msg = readObject(msgReceived);
 			
+			// TODO debug...
+			InetAddress thisNeighbor = null;
+			try {
+				thisNeighbor = InetAddress.getByAddress(address);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			Log.d(TAG, neighborsUserContext.get(thisNeighbor).getName() + " sent...");
+			
 			if(msg instanceof Opinion) {
 				Opinion opinion = (Opinion) msg;
 				opinion.print();
