@@ -131,10 +131,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 						tw = (TextView) findViewById(R.id.textView9);
 						tw.setText("Rating: " + application.getRatingAverage(application.GAME_4));
 						break;
-					
 					}
-														
-					
 				}
 				break;
 				

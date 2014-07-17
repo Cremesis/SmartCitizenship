@@ -204,6 +204,7 @@ public class ServiceDroidPark extends Service{
 				Bundle data = new Bundle();
 				message.what = msg instanceof RatingMsg?NEW_RATING_INSERTED:NEW_QUEUE_INSERTED;
 				data.putParcelable(msg instanceof RatingMsg?"rating":"queue", msg);
+				message.arg1 = msg.getIdGame();
 				message.setData(data);
 				mActivity.send(message);
 			}
