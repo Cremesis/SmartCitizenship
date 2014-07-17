@@ -521,7 +521,7 @@ public class ServiceDroidPark extends Service{
 			Set<InetAddress> addrLoses = new HashSet<InetAddress>();
 		
 			for (InetAddress i : currentNeighbors)
-				if (Math.random()< p && msg.getNumCopies() < addrOk.size()) {
+				if (Math.random()< p && msg.getNumCopies() >= addrOk.size()) {
 					addrOk.add(i);
 					Log.d(TAG, "forw: " + neighborsUserContext.get(i).getName());
 				} else {
