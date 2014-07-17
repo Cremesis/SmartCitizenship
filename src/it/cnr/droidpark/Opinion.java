@@ -1,5 +1,6 @@
 package it.cnr.droidpark;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,7 +10,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 @SuppressLint("SimpleDateFormat")
-public class Opinion implements Parcelable {
+public class Opinion implements Parcelable, Serializable {
+	
+	private static final long serialVersionUID = -4024860112791177737L;
 	
 	private int idGame;
 	private int idUser;

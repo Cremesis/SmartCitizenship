@@ -18,6 +18,11 @@ public class ApplicationDroidPark extends Application {
 	public final Integer NUMBER_OF_GAMES = 4;
 	public final Integer NUMBER_OF_COPIES = 50;
 	
+	// Attractions ID (for preferences)
+	public static final int GAME_1 = 1;
+	public static final int GAME_2 = 2;
+	public static final int GAME_3 = 3;
+	public static final int GAME_4 = 4;
 
 	private Set<ApplicationMsg> jobs;
 
@@ -37,11 +42,11 @@ public class ApplicationDroidPark extends Application {
 		Map<Integer, Opinion> demoMap = new Hashtable<Integer, Opinion>();
 		demoMap.put(466546, new Opinion(1, 466546, Calendar.getInstance().getTime(), "Questa è un'opinione"));
 		demoMap.put(87678, new Opinion(1, 87678, Calendar.getInstance().getTime(), "Questa è un'altra opinione"));
-		opinionList.put(1, demoMap);
+		opinionList.put(GAME_1, demoMap);
 	}
 	
 	public float getRatingAverage(Integer gameID) {
-		float average = 0f;
+		double average = 0f;
 		int numGameRatings = 0;
 		
 		Set<Entry<Integer, RatingMsg>> currentGameRatings = ratingList.get(gameID).entrySet();
@@ -50,7 +55,7 @@ public class ApplicationDroidPark extends Application {
 			numGameRatings++;
 		}
 		
-		return average / numGameRatings;
+		return (float) (average / numGameRatings);
 	}
 	
 	public Map<Integer, RatingMsg> getRatingMsg(Integer gameID) {
@@ -112,23 +117,21 @@ public class ApplicationDroidPark extends Application {
 	 *         false otherwise
 	 */
 	public boolean insertUpdateOpinion(Integer gameID, Integer userID, Opinion opinion) {
+		boolean rv = true;
 		Map<Integer, Opinion> gameOpinions = opinionList.get(gameID);
 		if(gameOpinions != null) {
 			Opinion currentUserOpinion = gameOpinions.get(userID);
-			if(currentUserOpinion != null) {
-				if(currentUserOpinion.getTimestamp().compareTo(opinion.getTimestamp()) > 0)
-					// The local opinion is newer than the "new" one. Don't do anything
-					return false;
-			}
+			// false when don't have that opinion or mine is more recent
+			rv = currentUserOpinion != null && currentUserOpinion.getTimestamp().compareTo(opinion.getTimestamp()) >= 0;
+		} else {
+			Log.d(TAG, "inserted/updated opinion");
+			
+			// Insert new opinion
+			gameOpinions = new Hashtable<Integer, Opinion>();
+			opinionList.put(gameID, gameOpinions);
 		}
-		
-		Log.d(TAG, "inserted/updated opinion");
-		
-		// Insert new opinion
-		Map<Integer, Opinion> userOpinion = new Hashtable<Integer, Opinion>();
-		userOpinion.put(userID, opinion);
-		opinionList.put(gameID, userOpinion);
-		return true;
+		gameOpinions.put(userID, opinion);
+		return rv;
 	}
 	
 	/**
@@ -143,6 +146,7 @@ public class ApplicationDroidPark extends Application {
 	 *         0, or because it is more recent or new), false otherwise
 	 */
 	public boolean insertRating(Integer gameID, Integer userID, RatingMsg rating) {
+		boolean rv = true;
 		Map<Integer, RatingMsg> gameRatings = ratingList.get(gameID);
 		RatingMsg currentUserRating = null;
 		if(gameRatings != null) {
@@ -151,41 +155,32 @@ public class ApplicationDroidPark extends Application {
 				int compare = currentUserRating.getTimestamp().compareTo(rating.getTimestamp());
 				if(compare > 0) { // The local rating is newer than the "new" one. Don't do anything
 					Log.d(TAG, "\"new\" rating is older than present");
-					return false;
-				} if(compare == 0) { // The local rating is the same of the "new" one. Sum the copies.
+					rating = currentUserRating;
+					rv = false;
+				} else if(compare == 0) { // The local rating is the same of the "new" one. Sum the copies.
 					int newNumCopies = currentUserRating.getNumCopies() + rating.getNumCopies();
 					Log.d(TAG, "added copies in rating");
-					if(newNumCopies > 0)
-						// if already present in the job list, it doesn't matter
-						jobs.add(currentUserRating);
-					updateNumCopies(currentUserRating, newNumCopies);
-					return true;
+					updateNumCopies(rating, newNumCopies);
+				} else {
+					Log.d(TAG, "inserting new rating message");
+					if(rating.getNumCopies() > 0) 
+						rating.setNumCopies(rating.getNumCopies()-1);
 				}
-			}
+			} 
+		} else {
+			gameRatings = new Hashtable<Integer, RatingMsg>();
+			ratingList.put(gameID, gameRatings);
 		}
 		
-		Log.d(TAG, "inserted/updated rating");
-		
-		// Decrement numCopies by 1
-		int ratingNumCopies = rating.getNumCopies();
-		if(ratingNumCopies > 0) rating.setNumCopies(ratingNumCopies-1);
-		
-		// Insert new rating
-		Map<Integer, RatingMsg> userRating = ratingList.get(gameID);
-		if(userRating == null) userRating = new Hashtable<Integer, RatingMsg>();
-		userRating.put(userID, rating);
-		ratingList.put(gameID, userRating);
-		
-		// New/more recent msg -> remove from the job list the older one (if present) and insert this new one.
-		// "older" means same gameID and userID but older timestamp
-		if((ratingNumCopies = rating.getNumCopies()) > 0) {
-			// If there is an older rating, remove it from the job list
-			if(currentUserRating != null) jobs.remove(currentUserRating);
-			
+		gameRatings.put(userID, rating);
+
+		if(currentUserRating != null)
+			jobs.remove(currentUserRating);
+		if(rating.getNumCopies() > 0)
 			jobs.add(rating);
-		}
+		else rv = false;
 		
-		return true;
+		return rv;
 	}
 	
 	/**
@@ -199,41 +194,32 @@ public class ApplicationDroidPark extends Application {
 	 *         0, or because it is more recent or new), false otherwise
 	 */
 	public boolean insertQueue(Integer gameID, QueueMsg queue) {
+		boolean rv = true;
 		QueueMsg currentQueue = queueList.get(gameID);
 		if(currentQueue != null) {
 			int compare = currentQueue.getTimestamp().compareTo(queue.getTimestamp());
 			if(compare > 0) { // The local queue is newer than the "new" one. Don't do anything
 				Log.d(TAG, "\"new\" queue is older than present");
-				return false;
-			} if(compare == 0) { // The local queue is the same of the "new" one. Sum the copies.
+				queue = currentQueue;
+				rv = false;
+			} else if(compare == 0) { // The local queue is the same of the "new" one. Sum the copies.
 				int newNumCopies = currentQueue.getNumCopies() + queue.getNumCopies();
 				Log.d(TAG, "added copies in queue");
-				if(newNumCopies > 0)
-					// if already present in the job list, it doesn't matter
-					jobs.add(currentQueue);
-				updateNumCopies(currentQueue, newNumCopies);
-				return true;
+				updateNumCopies(queue, newNumCopies);
+			} else {
+				Log.d(TAG, "inserting new queue message");
+				if(queue.getNumCopies() > 0) 
+					queue.setNumCopies(queue.getNumCopies()-1);
 			}
-		}
+		} 
 		
-		Log.d(TAG, "inserted/updated queue");
-		
-		// Decrement numCopies by 1
-		int queueNumCopies = queue.getNumCopies();
-		if(queueNumCopies > 0) queue.setNumCopies(queueNumCopies-1);
-		
-		// Insert new queue
 		queueList.put(gameID, queue);
-		
-		// New/more recent msg -> remove from the job list the older one (if present) and insert this new one.
-		// "older" means same gameID but older timestamp
-		if((queueNumCopies = queue.getNumCopies()) > 0) {
-			// If there is an older queue, remove it from the job list
-			if(currentQueue != null) jobs.remove(currentQueue);
-			
+		if(currentQueue != null)
+			jobs.remove(currentQueue);
+		if(queue.getNumCopies() > 0)
 			jobs.add(queue);
-		}
+		else rv = false;
 		
-		return true;
+		return rv;
 	}
 }
