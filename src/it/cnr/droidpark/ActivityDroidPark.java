@@ -5,6 +5,9 @@ import it.cnr.droidpark.RatingFragmentDialog.NoticeDialogListener;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -26,6 +29,7 @@ import android.view.View.OnLongClickListener;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -38,17 +42,15 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	
 	private ApplicationDroidPark application;
 	private static Date lastTimestamp;
-	private static int lastGameId;
+	public static int lastGameId;
 	public static int lastPressedGameButton;
-	static boolean outOfQueueComment=false;
+	static boolean outOfQueueComment=false; 
 	
 	int cronoStarted = -1;
 	
 	Messenger mService;
 	boolean mBound = false;
 	
-	int localuser;
-
 	final Messenger incomingMessenger = new Messenger(new IncomingHandler());
 	
 	private class ToggleLongListener implements OnLongClickListener{
@@ -80,29 +82,84 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-				case ServiceDroidPark.USER:{
-					localuser = msg.arg1;
-					Log.d(TAG, "Local user id: " + localuser);
-				}
-				break;
-				
 				case ServiceDroidPark.NEW_QUEUE_INSERTED:{
 					Log.d(TAG, "NEW_QUEUE_INSERTED received");
-					//QueueMsg queue = msg.getData().getParcelable("queue");
-					// TODO: show new time queue.getDuration() for game queue.getIdGame()
+					QueueMsg queue = msg.getData().getParcelable("queue");
+					TextView tw;
+					
+					switch (queue.getIdGame()){
+					case ApplicationDroidPark.GAME_1: 
+						tw = (TextView) findViewById(R.id.textView2);
+						tw.setText("Attesa: " + queue.getDuration() + " min");
+						break;
+					case ApplicationDroidPark.GAME_2: 
+						tw = (TextView) findViewById(R.id.textView6);
+						tw.setText("Attesa: " + queue.getDuration() + " min");
+						break;
+					case ApplicationDroidPark.GAME_3: 
+						tw = (TextView) findViewById(R.id.textView4);
+						tw.setText("Attesa: " + queue.getDuration() + " min");
+						break;
+					case ApplicationDroidPark.GAME_4: 
+						tw = (TextView) findViewById(R.id.textView8);
+						tw.setText("Attesa: " + queue.getDuration() + " min");
+						break;
+					
+					}
+										
+										
 				}
 				break;
 				
 				case ServiceDroidPark.NEW_RATING_INSERTED:{
 					Log.d(TAG, "NEW_RATING_INSERTED received");
-					//RatingMsg rating = msg.getData().getParcelable("rating");
-					// TODO: show new average rating application.getRatingAverage(rating.getIdGame()) for game rating.getIdGame()
+					TextView tw;					
+					switch (msg.arg1){
+					case ApplicationDroidPark.GAME_1: 
+						tw = (TextView) findViewById(R.id.textView3);
+						tw.setText("Rating: " + application.getRatingAverage(1));
+						break;
+					case ApplicationDroidPark.GAME_2: 
+						tw = (TextView) findViewById(R.id.textView7);
+						tw.setText("Rating: " + application.getRatingAverage(application.GAME_2));
+						break;
+					case ApplicationDroidPark.GAME_3: 
+						tw = (TextView) findViewById(R.id.textView5);
+						tw.setText("Rating: " + application.getRatingAverage(application.GAME_3));
+						break;
+					case ApplicationDroidPark.GAME_4: 
+						tw = (TextView) findViewById(R.id.textView9);
+						tw.setText("Rating: " + application.getRatingAverage(application.GAME_4));
+						break;
+					
+					}
+														
+					
 				}
 				break;
 				
 				case ServiceDroidPark.NEW_OPINION_INSERTED:{
 					Log.d(TAG, "NEW_OPINION_INSERTED received");
-					//Opinion opinion = msg.getData().getParcelable("opinion");
+					Opinion opinion = msg.getData().getParcelable("opinion");
+					String mess="";
+					switch (opinion.getIdGame()){
+					case ApplicationDroidPark.GAME_1: 
+						mess = getResources().getString(R.string.game_1);
+						break;
+					case ApplicationDroidPark.GAME_2: 
+						mess = getResources().getString(R.string.game_2);
+						break;
+					case ApplicationDroidPark.GAME_3: 
+						mess = getResources().getString(R.string.game_3);
+						break;
+					case ApplicationDroidPark.GAME_4: 
+						mess = getResources().getString(R.string.game_4);
+						break;
+					
+					}
+					Toast toast = Toast.makeText(getApplicationContext(), "Arrivata nuova opinione per " + mess, Toast.LENGTH_LONG);
+					toast.show();
+					
 					// TODO: decide what to do in this case...
 				}
 				break;
@@ -326,9 +383,31 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		outOfQueueComment=true;
 		gameEvaluation();
 		
+		TextView tw;
+		
+		switch (lastGameId){
+		case ApplicationDroidPark.GAME_1: 
+			tw = (TextView) findViewById(R.id.textView2);
+			tw.setText("Attesa: " + durataCodaInMinuti.toString() + " min");
+			break;
+		case ApplicationDroidPark.GAME_2: 
+			tw = (TextView) findViewById(R.id.textView6);
+			tw.setText("Attesa: " + durataCodaInMinuti.toString() + " min");
+			break;
+		case ApplicationDroidPark.GAME_3: 
+			tw = (TextView) findViewById(R.id.textView4);
+			tw.setText("Attesa: " + durataCodaInMinuti.toString() + " min");
+			break;
+		case ApplicationDroidPark.GAME_4: 
+			tw = (TextView) findViewById(R.id.textView8);
+			tw.setText("Attesa: " + durataCodaInMinuti.toString() + " min");
+			break;
+		
+		}
+		
+		
 	}
-	
-	
+		
 	public void queueDuration(View v){
 		Chronometer crono1 = (Chronometer) findViewById(R.id.chronometer1);
 		ToggleButton t0 = (ToggleButton) findViewById(R.id.toggleButton0);
@@ -413,17 +492,17 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		
 		
 		if(outOfQueueComment==true){
-			RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			RatingMsg rMsg = new RatingMsg(lastGameId, application.localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
 			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
 		
-			Opinion opinion = new Opinion(lastGameId, localuser, cal.getTime(), comment);
+			Opinion opinion = new Opinion(lastGameId, application.localuser, cal.getTime(), comment);
 			sendOpinionMsg(opinion, ServiceDroidPark.SEND_OPINION);
 		}
 		else{
-			RatingMsg rMsg = new RatingMsg(lastPressedGameButton, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			RatingMsg rMsg = new RatingMsg(lastPressedGameButton, application.localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
 			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
 			
-			Opinion opinion = new Opinion(lastPressedGameButton, localuser, cal.getTime(), comment);
+			Opinion opinion = new Opinion(lastPressedGameButton, application.localuser, cal.getTime(), comment);
 			sendOpinionMsg(opinion, ServiceDroidPark.SEND_OPINION);
 		}
 		
@@ -440,10 +519,10 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);	
 		
 		if(outOfQueueComment==true){
-			RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			RatingMsg rMsg = new RatingMsg(lastGameId, application.localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
 			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
 		}else{
-			RatingMsg rMsg = new RatingMsg(lastPressedGameButton, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			RatingMsg rMsg = new RatingMsg(lastPressedGameButton, application.localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
 			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
 						
 		}

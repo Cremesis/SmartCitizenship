@@ -37,7 +37,7 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton0"
        	     android:layout_below="@+id/toggleButton0"
-       	     android:text="Coda Misurata:  " />
+       	     android:text="Attesa:  " />
         
         <TextView
        	     android:id="@+id/textView3"
@@ -73,7 +73,7 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton1"
        	     android:layout_below="@+id/toggleButton1"
-       	     android:text="Coda Misurata:  " />
+       	     android:text="Attesa:  " />
         
         <TextView
        	     android:id="@+id/textView7"
@@ -110,7 +110,7 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton2"
        	     android:layout_below="@+id/toggleButton2"
-       	     android:text="Coda Misurata:  " />
+       	     android:text="Attesa:  " />
         
         <TextView
        	     android:id="@+id/textView5"
@@ -147,7 +147,7 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton3"
        	     android:layout_below="@+id/toggleButton3"
-       	     android:text="Coda Misurata:  " />
+       	     android:text="Attesa:  " />
         
         <TextView
        	     android:id="@+id/textView9"

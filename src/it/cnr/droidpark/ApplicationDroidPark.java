@@ -25,6 +25,7 @@ public class ApplicationDroidPark extends Application {
 	public static final int GAME_4 = 4;
 
 	private Set<ApplicationMsg> jobs;
+	public int localuser;
 
 	private Map<Integer, QueueMsg> queueList; // < IDgioco, QueueMsg > 
 	private Map<Integer, Map<Integer, RatingMsg>> ratingList; // < IDgioco, <IDutente,RatingMsg> >

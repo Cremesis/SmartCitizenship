@@ -1,14 +1,19 @@
 package it.cnr.droidpark;
 
-import it.cnr.droidpark.R;
+import java.util.Map;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
-
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.RatingBar;
+import android.widget.TextView;
 
 
 public class RatingFragmentDialog extends DialogFragment{
@@ -39,7 +44,6 @@ public class RatingFragmentDialog extends DialogFragment{
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
         			
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        
            
         builder.setTitle("Lascia il tuo giudizio")
         
@@ -64,12 +68,44 @@ public class RatingFragmentDialog extends DialogFragment{
                });
 				
                 LayoutInflater inflater = getActivity().getLayoutInflater();
-                builder.setView(inflater.inflate(R.layout.rating_fragment_dialog, null));               
+                View view = inflater.inflate(R.layout.rating_fragment_dialog, null);
+                builder.setView(view);
                 
-                
+                float previousRating;
+                String previousOpinion;
+                if(ActivityDroidPark.outOfQueueComment){
+                	previousRating = getPreviousRating(ActivityDroidPark.lastGameId);
+                	previousOpinion = getPreivousOpinion(ActivityDroidPark.lastGameId);
+                } else {
+                	previousRating = getPreviousRating(ActivityDroidPark.lastPressedGameButton);
+                	previousOpinion = getPreivousOpinion(ActivityDroidPark.lastPressedGameButton);
+                }
+                ((RatingBar)view.findViewById(R.id.ratingBar1)).setRating(previousRating);
+                ((EditText)view.findViewById(R.id.editText1)).setText(previousOpinion);
                
         return builder.create();
         
     }
+	
+	private String getPreivousOpinion(int gameID) {
+		ApplicationDroidPark application = (ApplicationDroidPark) getActivity().getApplication();
+		Opinion previousOpinion = application.getGameOpinion(gameID, application.localuser);
+		if(previousOpinion != null)
+			return previousOpinion.getMsg();
+		else
+			return "";
+	}
+	
+	private float getPreviousRating(int gameID) {
+		ApplicationDroidPark application = (ApplicationDroidPark) getActivity().getApplication();
+		Map<Integer, RatingMsg> map = application.getRatingMsg(gameID);
+    	if(map!=null){
+    		RatingMsg rating = map.get(application.localuser);
+    		if(rating != null) {
+    			return rating.getEval();
+    		}
+    	}
+    	return 0f;
+	}
 
 }

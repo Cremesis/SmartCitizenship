@@ -31,6 +31,8 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.webkit.WebView.FindListener;
+import android.widget.TextView;
 import android.widget.Toast;
 import cnr.Common.ApplicationContext;
 import cnr.Common.CallbackInterface;
@@ -64,7 +66,6 @@ public class ServiceDroidPark extends Service{
 	private long CAMEOAppKey;
 	
 	private ApplicationContext appContext;   // Map<Integer, Boolean>
-	public Integer localuser;
 	
 	private final Messenger incomingMessenger = new Messenger(new IncomingHandler());
 	private Messenger mActivity;
@@ -97,7 +98,7 @@ public class ServiceDroidPark extends Service{
 	public void onCreate() {
 		
 		application = (ApplicationDroidPark) getApplication();
-		
+				
 		neighbors = new Hashtable<InetAddress, Map<Integer,Boolean>>();
 		neighborsUserContext = new Hashtable<InetAddress, UserContext>();
 
@@ -178,10 +179,12 @@ public class ServiceDroidPark extends Service{
 		private void sendOpinions(InetAddress address) {
 			Opinion opinion;
 			for(Integer preference : neighbors.get(address).keySet()) {
-				opinion = application.getGameOpinion(preference, localuser);
+				opinion = application.getGameOpinion(preference, application.localuser);
 				if(opinion != null) sendMSGToPeer(opinion, address);
 			}
 		}
+		
+		
 		
 		private void phase1(ApplicationMsg msg)
 				throws RemoteException {
@@ -191,6 +194,7 @@ public class ServiceDroidPark extends Service{
 			if(msg instanceof RatingMsg) {
 				RatingMsg rating = (RatingMsg) msg;
 				inserted = application.insertRating(rating.getIdGame(), rating.getIdUser(), rating);
+				
 			} else {
 				QueueMsg queue = (QueueMsg) msg;
 				inserted = application.insertQueue(queue.getIdGame(), queue);
@@ -200,6 +204,7 @@ public class ServiceDroidPark extends Service{
 				Bundle data = new Bundle();
 				message.what = msg instanceof RatingMsg?NEW_RATING_INSERTED:NEW_QUEUE_INSERTED;
 				data.putParcelable(msg instanceof RatingMsg?"rating":"queue", msg);
+				message.setData(data);
 				mActivity.send(message);
 			}
 		}
@@ -299,6 +304,7 @@ public class ServiceDroidPark extends Service{
 					Bundle data = new Bundle();
 					message.what = NEW_OPINION_INSERTED;
 					data.putParcelable("opinion", opinion);
+					message.setData(data);
 					mActivity.send(message);
 				}
 			} else {
@@ -333,18 +339,7 @@ public class ServiceDroidPark extends Service{
 			appContext.addValue(DROID_VERSION, true);
 			appContext.update(cameo, CAMEOAppKey); // FIXME: not sure if needed
 			
-			localuser = cameo.getLocalUserContext(CAMEOAppKey).getName().hashCode();
-			if(mActivity!=null){
-				Message msg = Message.obtain();
-				msg.what = USER;
-				msg.arg1 = localuser;
-				try {
-					mActivity.send(msg);
-				} catch (RemoteException e) {
-					Log.e(TAG, Log.getStackTraceString(e));
-				}
-			}
-
+			application.localuser = cameo.getLocalUserContext(CAMEOAppKey).getName().hashCode();
 		} catch (RemoteException e) {
 			Toast.makeText(this, "Can't register application with CAMEO", Toast.LENGTH_SHORT).show();
 			// Die
@@ -373,6 +368,7 @@ public class ServiceDroidPark extends Service{
 					
 					Opinion opinion = msg.getData().getParcelable("msg");
 					application.insertUpdateOpinion(opinion.getIdGame(), opinion.getIdUser(), opinion);
+					
 				}
 				break;
 				
@@ -380,11 +376,22 @@ public class ServiceDroidPark extends Service{
 					Log.d(TAG, "SEND_RATING received");
 					
 					RatingMsg rate = msg.getData().getParcelable("msg");
-					application.insertRating(rate.getIdGame(), localuser, rate);
+					application.insertRating(rate.getIdGame(), application.localuser, rate);
 					if (inQueue == false)
 						spreadAndWait(rate);
 					else
 						probAlgorithm(rate);
+					
+					Message ms = Message.obtain();
+					ms.arg1 = rate.getIdGame();
+					
+					ms.what=NEW_RATING_INSERTED;
+					try {
+						mActivity.send(ms);
+					} catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 				break;
 				
