@@ -24,6 +24,8 @@ public class PopUpOptionDialog extends DialogFragment{
 	
 	PopUpDialogListener mListener;
 	
+	
+	
 	public void onAttach(Activity activity) {
         super.onAttach(activity);
         // Verify that the host activity implements the callback interface

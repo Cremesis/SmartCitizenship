@@ -40,6 +40,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	private static Date lastTimestamp;
 	private static int lastGameId;
 	public static int lastPressedGameButton;
+	static boolean outOfQueueComment=false;
 	
 	int cronoStarted = -1;
 	
@@ -296,7 +297,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	};
 
 
-	@Override
+	
 	public void gameEvaluation(){
 		RatingFragmentDialog ratingFrag = new RatingFragmentDialog();
 		ratingFrag.show(getSupportFragmentManager(), "RATING");
@@ -322,7 +323,9 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		sendMsg(msg);
 						
 		cronoStarted = -1;
+		outOfQueueComment=true;
 		gameEvaluation();
+		
 	}
 	
 	
@@ -401,32 +404,50 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	}
 		
 	@Override
-	public void onDialogPositiveClick(DialogFragment dialog) {
+	public void onDialogPositiveClick(DialogFragment dialog, boolean endOfQueueComment) {
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);
 		EditText et = (EditText) dialog.getDialog().findViewById(R.id.editText1);
 		
 		String comment = et.getText().toString();
 		Calendar cal = Calendar.getInstance();
-				
-		RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
-		sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
 		
-		Opinion opinion = new Opinion(lastGameId, localuser, cal.getTime(), comment);
-		sendOpinionMsg(opinion, ServiceDroidPark.SEND_OPINION);
-				
+		
+		if(outOfQueueComment==true){
+			RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
+		
+			Opinion opinion = new Opinion(lastGameId, localuser, cal.getTime(), comment);
+			sendOpinionMsg(opinion, ServiceDroidPark.SEND_OPINION);
+		}
+		else{
+			RatingMsg rMsg = new RatingMsg(lastPressedGameButton, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
+			
+			Opinion opinion = new Opinion(lastPressedGameButton, localuser, cal.getTime(), comment);
+			sendOpinionMsg(opinion, ServiceDroidPark.SEND_OPINION);
+		}
+		
+		outOfQueueComment=false;	
+		
 		Toast toast = Toast.makeText(getApplicationContext(), "Hai lasciato un commento", Toast.LENGTH_SHORT);
 		toast.show();
 				
 	}
 
 	@Override
-	public void onDialogNegativeClick(DialogFragment dialog) {
+	public void onDialogNegativeClick(DialogFragment dialog,boolean endOfQueueComment) {
 		Calendar cal = Calendar.getInstance();
 		RatingBar rb = (RatingBar) dialog.getDialog().findViewById(R.id.ratingBar1);	
 		
-		RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
-		sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
+		if(outOfQueueComment==true){
+			RatingMsg rMsg = new RatingMsg(lastGameId, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
+		}else{
+			RatingMsg rMsg = new RatingMsg(lastPressedGameButton, localuser, cal.getTime(), rb.getRating(), application.NUMBER_OF_COPIES);
+			sendApplicationMsg(rMsg, ServiceDroidPark.SEND_RATING);
 						
+		}
+		outOfQueueComment=false;				
 		Toast toast = Toast.makeText(getApplicationContext(), "Valutazione salvata", Toast.LENGTH_SHORT);
 		toast.show();
 				
@@ -434,6 +455,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 
 	@Override
 	public void onDialogNeutralClick(DialogFragment dialog) {
+		outOfQueueComment=false;
 		dialog.dismiss();
 	}
 

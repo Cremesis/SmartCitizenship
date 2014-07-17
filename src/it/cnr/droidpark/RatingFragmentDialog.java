@@ -14,12 +14,13 @@ import android.view.LayoutInflater;
 public class RatingFragmentDialog extends DialogFragment{
 	
 	public interface NoticeDialogListener {
-        public void onDialogPositiveClick(DialogFragment dialog);
-        public void onDialogNegativeClick(DialogFragment dialog);
+        public void onDialogPositiveClick(DialogFragment dialog, boolean b);
+        public void onDialogNegativeClick(DialogFragment dialog, boolean b);
         public void onDialogNeutralClick(DialogFragment dialog);
     }
 
 	NoticeDialogListener mListener;
+	 
 		
 	public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -39,18 +40,18 @@ public class RatingFragmentDialog extends DialogFragment{
         			
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         
-            
+           
         builder.setTitle("Lascia il tuo giudizio")
         
                .setPositiveButton("Valuta e Commenta", new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
-                   mListener.onDialogPositiveClick(RatingFragmentDialog.this);
+                   mListener.onDialogPositiveClick(RatingFragmentDialog.this,false);
                    }
                })
         
                .setNegativeButton("Valuta", new DialogInterface.OnClickListener() {
                    public void onClick(DialogInterface dialog, int id) {
-               	   mListener.onDialogNegativeClick(RatingFragmentDialog.this);
+               	   mListener.onDialogNegativeClick(RatingFragmentDialog.this,false);
                	   
                    }
                })
@@ -64,6 +65,8 @@ public class RatingFragmentDialog extends DialogFragment{
 				
                 LayoutInflater inflater = getActivity().getLayoutInflater();
                 builder.setView(inflater.inflate(R.layout.rating_fragment_dialog, null));               
+                
+                
                
         return builder.create();
         

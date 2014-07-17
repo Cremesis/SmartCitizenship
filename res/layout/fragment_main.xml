@@ -20,7 +20,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             
-            
+            android:drawableTop="@drawable/roller_coaster"
             android:width="135dp"
             android:height="115dp"
             android:onClick="queueDuration"
@@ -96,6 +96,7 @@
             android:width="135dp"
             android:height="115dp"			            
             android:onClick="queueDuration"
+            android:drawableTop="@drawable/colorado_boat"
             android:textOff="@string/game_3"
             android:textOn="@string/game_3"
             android:longClickable="true" />
@@ -127,7 +128,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_alignParentRight="true"
-            
+            android:drawableTop="@drawable/fast"
             android:layout_below="@+id/textView7"
             android:width="135dp"
             android:height="115dp"    
