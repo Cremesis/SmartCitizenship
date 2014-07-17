@@ -420,6 +420,7 @@ public class ServiceDroidPark extends Service{
 						Log.d(TAG,"PREFERENCE UPDATE "+ msg.arg1);
 						if(appContext.getValue(msg.arg1) != null) {
 							appContext.removeValue(msg.arg1);
+							application.getAllGameOpinions(msg.arg1).clear();
 							Toast.makeText(getApplicationContext(), "Preferenza rimossa", Toast.LENGTH_SHORT).show();
 						} else {
 							appContext.addValue(msg.arg1, true);
@@ -513,16 +514,20 @@ public class ServiceDroidPark extends Service{
 	}
 	
 	public void probAlgorithm(ApplicationMsg msg){
+		Log.d(TAG, "probAlgorithm()");
 		if (currentNeighbors.size()!=0){
 			double p = setProbabilityTrasmission(currentNeighbors.size());
 			Set<InetAddress> addrOk = new HashSet<InetAddress>();
 			Set<InetAddress> addrLoses = new HashSet<InetAddress>();
 		
 			for (InetAddress i : currentNeighbors)
-				if (Math.random()< p && msg.getNumCopies() < addrOk.size())
+				if (Math.random()< p && msg.getNumCopies() < addrOk.size()) {
 					addrOk.add(i);
-				else
+					Log.d(TAG, "forw: " + neighborsUserContext.get(i).getName());
+				} else {
 					addrLoses.add(i);
+					Log.d(TAG, "NO forw: " + neighborsUserContext.get(i).getName());
+				}
 			ApplicationMsg copyToSend = msg.duplicate();
 			if(addrOk.size() != 0) {
 				int numCopiesToSend = copyToSend.getNumCopies()/addrOk.size();
@@ -530,6 +535,8 @@ public class ServiceDroidPark extends Service{
 				copyToSend.setNumCopies(numCopiesToSend);  // TODO controllo al crescere di k sulle copie potenzialmente perse
 				sendToMultipleRecipients(copyToSend, addrOk);
 				application.updateNumCopies(msg, copiesKept);
+			} else {
+				Log.d(TAG, "No forwarders");
 			}
 			copyToSend.setNumCopies(0);
 			sendToMultipleRecipients(copyToSend, addrLoses);
