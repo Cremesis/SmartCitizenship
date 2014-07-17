@@ -55,10 +55,10 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 		@Override
 		public boolean onLongClick(View v) {
 			switch(v.getId()){
-			case R.id.toggleButton0: lastPressedGameButton = ServiceDroidPark.GAME_1; break;
-			case R.id.toggleButton1: lastPressedGameButton = ServiceDroidPark.GAME_2; break;
-			case R.id.toggleButton2: lastPressedGameButton = ServiceDroidPark.GAME_3; break;
-			case R.id.toggleButton3: lastPressedGameButton = ServiceDroidPark.GAME_4; break;
+			case R.id.toggleButton0: lastPressedGameButton = ApplicationDroidPark.GAME_1; break;
+			case R.id.toggleButton1: lastPressedGameButton = ApplicationDroidPark.GAME_2; break;
+			case R.id.toggleButton2: lastPressedGameButton = ApplicationDroidPark.GAME_3; break;
+			case R.id.toggleButton3: lastPressedGameButton = ApplicationDroidPark.GAME_4; break;
 			}
 			PopUpOptionDialog pop = new PopUpOptionDialog();
 			pop.show(getSupportFragmentManager(), "Pop");
@@ -345,7 +345,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 							
 				} else {
 					if(cronoStarted == 0) {
-						lastGameId =  ServiceDroidPark.GAME_1;
+						lastGameId =  ApplicationDroidPark.GAME_1;
 						cronoStop(crono1);														
 					} else t0.toggle();
 				}
@@ -361,7 +361,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 					
 				} else {
 					if (cronoStarted==1) {
-						lastGameId =  ServiceDroidPark.GAME_2;
+						lastGameId =  ApplicationDroidPark.GAME_2;
 						cronoStop(crono1);
 						
 					}else t1.toggle();
@@ -377,7 +377,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 					
 				} else {
 					if (cronoStarted==2) {
-						lastGameId =  ServiceDroidPark.GAME_3;
+						lastGameId =  ApplicationDroidPark.GAME_3;
 						cronoStop(crono1);
 						
 					}else t2.toggle();
@@ -393,7 +393,7 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 					
 				} else {
 					if (cronoStarted==3) {
-						lastGameId =  ServiceDroidPark.GAME_4;
+						lastGameId =  ApplicationDroidPark.GAME_4;
 						cronoStop(crono1);
 					}else t3.toggle();
 				}
