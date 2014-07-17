@@ -93,10 +93,7 @@ public class ApplicationDroidPark extends Application {
 	public void updateNumCopies(ApplicationMsg msg, int newNumCopies) {
 		msg.setNumCopies(newNumCopies);
 		if(newNumCopies <= 0) {
-			// FIXME: remove debug check
-			boolean debug = jobs.remove(msg);
-			Log.d(TAG, "Removed msg");
-			if(!debug) Log.d(TAG, "Tried to remove a msg not in the job list! It's probably an error");
+			jobs.remove(msg);
 		}
 	}
 	
