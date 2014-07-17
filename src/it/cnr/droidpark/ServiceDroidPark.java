@@ -495,11 +495,15 @@ public class ServiceDroidPark extends Service{
 		for(InetAddress thisNeighbor : youngestNeighbors) {
 			if(thisNeighbor == null) continue;
 			copyToSend.setNumCopies(numCopiesToSend);
+			Log.d(TAG, "sending msg...");
+			copyToSend.print();
 			sendMSGToPeer(copyToSend, thisNeighbor);
 			application.updateNumCopies(msg, msg.getNumCopies() - numCopiesToSend);
 		}
 		for(InetAddress thisNeighbor : notForwarders) {
 			copyToSend.setNumCopies(1);
+			Log.d(TAG, "sending msg...");
+			copyToSend.print();
 			sendMSGToPeer(copyToSend, thisNeighbor);
 			application.updateNumCopies(msg, msg.getNumCopies() - 1);
 		}
