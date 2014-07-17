@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -494,12 +495,12 @@ public class ServiceDroidPark extends Service{
 		Log.d(TAG, "spreadAndWait()");
 		Set<InetAddress> notForwarders = new HashSet<InetAddress>(currentNeighbors);
 		updateYoungestForwarders();
-		notForwarders.removeAll(Arrays.asList(youngestNeighbors));
+		List<InetAddress> yNeighbors = Arrays.asList(youngestNeighbors);
+		notForwarders.removeAll(yNeighbors);
 		
 		ApplicationMsg copyToSend = msg.duplicate();
-		int numCopiesToSend =(int) Math.floor(((double)copyToSend.getNumCopies() - notForwarders.size())/3);
-		for(InetAddress thisNeighbor : youngestNeighbors) {
-			if(thisNeighbor == null) continue;
+		int numCopiesToSend = (int) Math.floor((copyToSend.getNumCopies() - notForwarders.size())/(yNeighbors.size()+1.0d));
+		for(InetAddress thisNeighbor : yNeighbors) {
 			copyToSend.setNumCopies(numCopiesToSend);
 			Log.d(TAG, "sending msg...");
 			copyToSend.print();
