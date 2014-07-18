@@ -452,7 +452,9 @@ public class ServiceDroidPark extends Service{
 		int min1 = Integer.MAX_VALUE, min2 = Integer.MAX_VALUE, currentAge; // min1 <= min2
 		InetAddress[] youngest = new InetAddress[2];
 		for(InetAddress neighbor : currentNeighbors) {
-			currentAge = neighborsUserContext.get(neighbor).getAge();
+			Log.d(TAG, "updateYoungestForwarders(): neighbor = "+neighbor);
+			currentAge = neighborsUserContext.get(neighbor).getAge() != null? neighborsUserContext.get(neighbor).getAge() : 45;
+			Log.d(TAG, "updateYoungestForwarders(): name = "+neighborsUserContext.get(neighbor).getName());
 			
 			if(currentAge <= min1) { // the "=" part is needed to get the youngest ones, even if they have the same age
 				min2 = min1;
@@ -480,12 +482,14 @@ public class ServiceDroidPark extends Service{
 	public void spreadAndWaitNeighborIn(InetAddress newNeighbor) {
 		Log.d(TAG, "spreadAndWaitNeighborIn()");
 		updateYoungestForwarders();
-		int newNeighborAge = neighborsUserContext.get(newNeighbor).getAge();
-		if((youngestNeighbors.size() == 2 && newNeighborAge <= neighborsUserContext.get(youngestNeighbors.get(1)).getAge()) // younger than the second youngest
-				|| newNeighborAge <= neighborsUserContext.get(youngestNeighbors.get(0)).getAge()) { // younger than the first youngest
+		int newNeighborAge = neighborsUserContext.get(newNeighbor).getAge() != null? neighborsUserContext.get(newNeighbor).getAge() : 45;
+		int newNeighborAge0 = neighborsUserContext.get(youngestNeighbors.get(0)).getAge() != null? neighborsUserContext.get(youngestNeighbors.get(0)).getAge() : 45;
+		int newNeighborAge1 = neighborsUserContext.get(youngestNeighbors.get(1)).getAge() != null? neighborsUserContext.get(youngestNeighbors.get(1)).getAge() : 45;
+		if((youngestNeighbors.size() == 2 && newNeighborAge <= newNeighborAge1) // younger than the second youngest
+				|| newNeighborAge <= newNeighborAge0) { // younger than the first youngest
 			for (ApplicationMsg appMsg : application.getJobs()) {
 				ApplicationMsg copyToSend = appMsg.duplicate();
-				int numCopiesToSend =(int) Math.floor(((double)copyToSend.getNumCopies())/2);
+				int numCopiesToSend =(int) Math.floor(((double)copyToSend.getNumCopies()+1)/2);
 				copyToSend.setNumCopies(numCopiesToSend);
 				sendMSGToPeer(copyToSend, newNeighbor);
 				application.updateNumCopies(appMsg, appMsg.getNumCopies() - numCopiesToSend);
