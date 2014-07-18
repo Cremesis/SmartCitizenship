@@ -28,6 +28,16 @@
             android:textOn="@string/game_1"
             android:longClickable="true" />
         
+        <ImageView
+            android:id="@+id/tick0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/toggleButton0"
+            android:layout_alignTop="@+id/toggleButton0"
+            android:scaleType="fitXY"
+            android:src="@drawable/tick"
+            android:visibility="invisible" />
+        
         <RelativeLayout
             android:id="@+id/ratingLayout0"
             android:layout_width="wrap_content"
@@ -70,6 +80,16 @@
             android:textOff="@string/game_2"
             android:textOn="@string/game_2"
             android:longClickable="true" />
+        
+        <ImageView
+            android:id="@+id/tick1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/toggleButton1"
+            android:layout_alignTop="@+id/toggleButton1"
+            android:scaleType="fitXY"
+            android:src="@drawable/tick"
+            android:visibility="invisible" />
         
         <RelativeLayout
             android:id="@+id/ratingLayout1"
@@ -114,6 +134,16 @@
             android:textOn="@string/game_3"
             android:longClickable="true" />
         
+        <ImageView
+            android:id="@+id/tick2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/toggleButton2"
+            android:layout_alignTop="@+id/toggleButton2"
+            android:scaleType="fitXY"
+            android:src="@drawable/tick"
+            android:visibility="invisible" />
+        
          <RelativeLayout
             android:id="@+id/ratingLayout2"
             android:layout_width="wrap_content"
@@ -157,6 +187,16 @@
             android:textOff="@string/game_4"
             android:textOn="@string/game_4"
             android:longClickable="true" />
+        
+        <ImageView
+            android:id="@+id/tick3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/toggleButton3"
+            android:layout_alignTop="@+id/toggleButton3"
+            android:scaleType="fitXY"
+            android:src="@drawable/tick"
+            android:visibility="invisible" />
         
         <RelativeLayout
 	        android:id="@+id/ratingLayout3"

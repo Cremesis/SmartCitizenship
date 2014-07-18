@@ -430,7 +430,12 @@ public class ServiceDroidPark extends Service{
 							appContext.addValue(msg.arg1, true);
 							Toast.makeText(getApplicationContext(), "Preferenza aggiunta", Toast.LENGTH_SHORT).show();
 						}
-						appContext.update(cameo, CAMEOAppKey);						
+						appContext.update(cameo, CAMEOAppKey);
+						
+						Message msg2 = Message.obtain();
+						msg2.what = UPDATE_PREF;
+						msg2.arg1 = msg.arg1;
+						mActivity.send(msg2);
 						
 					} catch(RemoteException e) {
 						e.printStackTrace();

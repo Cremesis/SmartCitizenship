@@ -5,9 +5,6 @@ import it.cnr.droidpark.RatingFragmentDialog.NoticeDialogListener;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -28,6 +25,7 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.widget.Chronometer;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -81,7 +79,32 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 	class IncomingHandler extends Handler { // Handles incoming messages from the Service
 		@Override
 		public void handleMessage(Message msg) {
-			switch (msg.what) {
+				switch (msg.what) {
+				
+				case ServiceDroidPark.UPDATE_PREF:{
+					ImageView iv = null;
+					switch(msg.arg1) {
+						case ApplicationDroidPark.GAME_1:{
+							iv = (ImageView) findViewById(R.id.tick0);
+						}
+						break;
+						case ApplicationDroidPark.GAME_2:{
+							iv = (ImageView) findViewById(R.id.tick1);
+						}
+						break;
+						case ApplicationDroidPark.GAME_3:{
+							iv = (ImageView) findViewById(R.id.tick2);
+						}
+						break;
+						case ApplicationDroidPark.GAME_4:{
+							iv = (ImageView) findViewById(R.id.tick3);
+						}
+						break;
+					}
+					iv.setVisibility(iv.getVisibility() == View.VISIBLE ? View.INVISIBLE : View.VISIBLE);
+					break;
+				}
+			
 				case ServiceDroidPark.NEW_QUEUE_INSERTED:{
 					Log.d(TAG, "NEW_QUEUE_INSERTED received");
 					QueueMsg queue = msg.getData().getParcelable("queue");
