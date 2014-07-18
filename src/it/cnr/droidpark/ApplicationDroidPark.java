@@ -15,7 +15,7 @@ public class ApplicationDroidPark extends Application {
 	
     private static final String TAG = "ApplicationDroidPark";
 	public final Integer NUMBER_OF_GAMES = 4;
-	public final Integer NUMBER_OF_COPIES = 50;
+	public final Integer NUMBER_OF_COPIES = 1000;
 	
 	// Attractions ID (for preferences)
 	public static final int GAME_1 = 1;

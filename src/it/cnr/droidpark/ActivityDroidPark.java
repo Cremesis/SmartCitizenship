@@ -113,23 +113,23 @@ public class ActivityDroidPark extends FragmentActivity implements NoticeDialogL
 				
 				case ServiceDroidPark.NEW_RATING_INSERTED:{
 					Log.d(TAG, "NEW_RATING_INSERTED received");
-					TextView tw;					
+					RatingBar rb;					
 					switch (msg.arg1){
 					case ApplicationDroidPark.GAME_1: 
-						tw = (TextView) findViewById(R.id.textView3);
-						tw.setText("Rating: " + application.getRatingAverage(application.GAME_1));
+						rb = (RatingBar) findViewById(R.id.resultRatingBar0);
+						rb.setRating(application.getRatingAverage(application.GAME_1));
 						break;
 					case ApplicationDroidPark.GAME_2: 
-						tw = (TextView) findViewById(R.id.textView7);
-						tw.setText("Rating: " + application.getRatingAverage(application.GAME_2));
+						rb = (RatingBar) findViewById(R.id.resultRatingBar1);
+						rb.setRating(application.getRatingAverage(application.GAME_2));
 						break;
 					case ApplicationDroidPark.GAME_3: 
-						tw = (TextView) findViewById(R.id.textView5);
-						tw.setText("Rating: " + application.getRatingAverage(application.GAME_3));
+						rb = (RatingBar) findViewById(R.id.resultRatingBar2);
+						rb.setRating(application.getRatingAverage(application.GAME_3));
 						break;
 					case ApplicationDroidPark.GAME_4: 
-						tw = (TextView) findViewById(R.id.textView9);
-						tw.setText("Rating: " + application.getRatingAverage(application.GAME_4));
+						rb = (RatingBar) findViewById(R.id.resultRatingBar3);
+						rb.setRating(application.getRatingAverage(application.GAME_4));
 						break;
 					}
 				}
