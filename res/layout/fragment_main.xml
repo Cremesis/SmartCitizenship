@@ -19,7 +19,6 @@
             android:layout_margin="10dp"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            
             android:drawableTop="@drawable/roller_coaster"
             android:width="135dp"
             android:height="115dp"
@@ -54,7 +53,9 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton0"
        	     android:layout_below="@+id/ratingLayout0"
-       	     android:text="Attesa:  " />
+       	     android:text="Attesa:  "
+       	     android:textStyle="bold"
+       	      />
         
         <ToggleButton
             android:id="@+id/toggleButton1"
@@ -97,6 +98,7 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton1"
        	     android:layout_below="@+id/ratingLayout1"
+       	     android:textStyle="bold"
        	     android:text="Attesa:  " />
         
         <ToggleButton
@@ -106,6 +108,7 @@
             android:layout_margin="10dp"                      
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/textView2"
+            
             android:width="135dp"
             android:height="115dp"			            
             android:onClick="queueDuration"
@@ -140,7 +143,10 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton2"
        	     android:layout_below="@+id/ratingLayout2"
-       	     android:text="Attesa:  " />
+       	     android:text="Attesa:  "
+       	     android:textColor="@android:color/white"
+       	     
+       	     android:textStyle="bold" />
 
         <ToggleButton
             android:id="@+id/toggleButton3"
@@ -183,7 +189,10 @@
        	     android:layout_marginLeft="10dp"
        	     android:layout_alignLeft="@+id/toggleButton3"
        	     android:layout_below="@+id/ratingLayout3"
-       	     android:text="Attesa:  " />
+       	     android:text="Attesa:  "
+       	     android:textColor="@android:color/white"
+       	    
+       	     android:textStyle="bold" />
         
        	 <TextView
        	     android:id="@+id/textView1"
@@ -191,9 +200,13 @@
        	     android:layout_height="wrap_content"       	     
        	     android:layout_alignLeft="@+id/toggleButton2"
        	     android:layout_below="@+id/textView4"
-       	     android:layout_marginTop="25dp"
+       	     android:layout_marginTop="80dp"
        	     android:layout_marginLeft="50dp"
-       	     android:text="Durata Coda:  " />
+       	     
+       	     android:text="Durata Coda:  "
+       	     android:textColor="@android:color/white"
+       	     android:textSize="20sp"
+       	     android:textStyle="bold" />
 
        	 <Chronometer
        	     android:id="@+id/chronometer1"
@@ -203,6 +216,9 @@
        	     android:layout_alignBaseline="@+id/textView1"
        	     android:layout_toRightOf="@+id/textView1"
        	     android:layout_below="@+id/textView9"
+       	     android:textColor="@android:color/white"
+       	     android:textSize="20sp"
+       	     android:textStyle="bold"
        	      />
        
 </RelativeLayout>
